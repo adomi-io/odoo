@@ -8,6 +8,7 @@ FROM alpine/git as source
 
 ENV ODOO_VERSION=18.0
 ENV ODOO_REPOSITORY=https://github.com/odoo/odoo.git
+
 WORKDIR /odoo
 
 # Grab the latest source from GitHub
@@ -16,7 +17,6 @@ RUN git clone  \
     --single-branch  \
     --depth 1  \
     ${ODOO_REPOSITORY} .
-
 
 FROM python:${PYTHON_VERSION}-alpine
 MAINTAINER Adomi Software, LLC <github@adomisoftware.com>
