@@ -4,36 +4,18 @@ ARG WKHTMLTOPDF_VERSION=3.21.2-0.12.6
 
 FROM surnet/alpine-wkhtmltopdf:${WKHTMLTOPDF_VERSION}-small as wkhtmltopdf
 FROM node:${NODE_VERSION}-alpine as node
-FROM alpine:latest as source
+FROM alpine/git as source
 
-ARG ODOO_VERSION=18.0
-ARG BASE_URL="http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb"
-ARG SOURCES_URL="http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/Sources"
-
-RUN apk add --no-cache curl bash grep gawk coreutils xz
-
+ENV ODOO_VERSION=18.0
+ENV ODOO_REPOSITORY=https://github.com/odoo/odoo.git
 WORKDIR /odoo
 
-# 1. Fetch "Sources" file
-# 2. Extract line with .tar.xz and its SHA256
-# 3. Download the tarball and verify against the checksum
-# 4. Extract Odoo to /odoo/odoo
-RUN set -eux; \
-    # 1. Get the line from the Sources file
-    line="$(curl -s "$SOURCES_URL" \
-      | awk '/^Checksums-Sha256:/{f=1;next}/^Files:/{f=0}f' \
-      | grep '.tar.xz')"; \
-    # 2. Parse out SHA256, size, and filename using awk
-    sha256="$(echo "$line" | awk '{print $1}')"; \
-    size="$(echo "$line" | awk '{print $2}')"; \
-    filename="$(echo "$line" | awk '{print $3}')"; \
-    # 3. Download the file
-    curl -fSL -o "odoo.tar.xz" "${BASE_URL}/${filename}"; \
-    echo "$sha256  odoo.tar.xz" | sha256sum --check -; \
-    # 5. Unpack it
-    tar -xf "odoo.tar.xz" -C . --strip-components=1
-
-RUN rm -rf odoo.tar.xz
+# Grab the latest source from GitHub
+RUN git clone  \
+    --branch ${ODOO_VERSION}  \
+    --single-branch  \
+    --depth 1  \
+    ${ODOO_REPOSITORY} .
 
 
 FROM python:${PYTHON_VERSION}-alpine
@@ -41,15 +23,9 @@ MAINTAINER Adomi Software, LLC <github@adomisoftware.com>
 
 WORKDIR /odoo
 
-# Optional: busybox shell is default, but let's ensure we have bash for your scripts
-#SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 ENV LANG=en_US.UTF-8
 
-# Odoo environment
-ENV ODOO_VERSION 18.0
-ARG ODOO_RELEASE=20250207
-ARG ODOO_SHA=5658df4949b61e3b910aaa1000ec2b14c2b565c9
+# Set the location of the generated Odoo conf
 ENV ODOO_RC /etc/odoo/odoo_docker.conf
 
 # Upgrade pip

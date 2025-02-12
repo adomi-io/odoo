@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: odoo
     environment:
-      ADDONS_PATH: ${ADDONS_PATH:-/mnt/extra-addons}
+#      ADDONS_PATH: ${ADDONS_PATH:-/mnt/extra-addons}
       DATA_DIR: ${DATA_DIR:-/var/lib/odoo}
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
