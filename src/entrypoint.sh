@@ -3,9 +3,10 @@
 set -e
 
 # Setup default configuration values
-export ODOO_ADDONS_LOCATION=${ODOO_ADDONS_LOCATION:-'/odoo/addons'}
-export ADDONS_PATH=${ODOO_ADDONS_LOCATION},${ADDONS_PATH:-/mnt/extra-addons}
-export DATA_DIR=${DATA_DIR:-/var/lib/odoo}
+export ODOO_DEFAULT_ADDONS=${ODOO_ADDONS_LOCATION:-'/odoo/addons'}
+export EXTRA_ADDONS=${EXTRA_ADDONS:-/volumes/addons}
+export ADDONS_PATH="${ADDONS_PATH:-${ODOO_DEFAULT_ADDONS},${EXTRA_ADDONS}}"
+export DATA_DIR=${DATA_DIR:-/volumes/data}
 export DB_HOST=${DB_HOST:=${DB_PORT_5432_TCP_ADDR:='db'}}
 export DB_PORT=${DB_PORT:=${DB_PORT_5432_TCP_PORT:=5432}}
 export DB_USER=${DB_USER:=${DB_ENV_POSTGRES_USER:=${POSTGRES_USER:='odoo'}}}
