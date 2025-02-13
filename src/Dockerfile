@@ -2,9 +2,9 @@ ARG PYTHON_VERSION=3.12
 ARG NODE_VERSION=22
 ARG WKHTMLTOPDF_VERSION=3.21.2-0.12.6
 
-FROM surnet/alpine-wkhtmltopdf:${WKHTMLTOPDF_VERSION}-full as wkhtmltopdf
-FROM node:${NODE_VERSION}-alpine as node
-FROM alpine/git as source
+FROM surnet/alpine-wkhtmltopdf:${WKHTMLTOPDF_VERSION}-full AS wkhtmltopdf
+FROM node:${NODE_VERSION}-alpine AS node
+FROM alpine/git AS source
 
 ENV ODOO_VERSION=18.0
 ENV ODOO_REPOSITORY=https://github.com/odoo/odoo.git
@@ -19,14 +19,14 @@ RUN git clone  \
     ${ODOO_REPOSITORY} .
 
 FROM python:${PYTHON_VERSION}-alpine
-MAINTAINER Adomi Software, LLC <github@adomisoftware.com>
+LABEL maintainer="Adomi Software, LLC <github@adomisoftware.com>"
 
 WORKDIR /odoo
 
 ENV LANG=en_US.UTF-8
 
 # Set the location of the generated Odoo conf
-ENV ODOO_RC /etc/odoo/odoo_docker.conf
+ENV ODOO_RC=/etc/odoo/odoo_docker.conf
 
 # Upgrade pip
 RUN pip install --no-cache-dir --upgrade pip
