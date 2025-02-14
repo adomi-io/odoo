@@ -5,13 +5,13 @@ on:
     - cron: '38 3 * * *'
   push:
     branches:
-      - "master"
+#      - "master"
       - "16.0"
       - "17.0"
       - "18.0"
   pull_request:
     branches:
-      - "master"
+#      - "master"
       - "16.0"
       - "17.0"
       - "18.0"
