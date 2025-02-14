@@ -177,25 +177,15 @@ db_password = $DB_PASSWORD
 
 Default Variables
 --- 
+These variables let you fine-tune your Odoo configuration. 
 
-### Mandatory Options
 
-These variables are required for the container to connect to your database and store data:
-
-| Variable    | Default Value      | Description                                       |
-| ----------- | ------------------ | ------------------------------------------------- |
+| Variable               | Default Value                        | Description                                                            |
+| ---------------------- | ------------------------------------ | ---------------------------------------------------------------------- |
 | DB_HOST     | `db`               | Hostname of the PostgreSQL server.                |
 | DB_PORT     | `5432`             | Port number for the PostgreSQL server.            |
 | DB_USER     | `odoo`             | Username for the PostgreSQL connection.           |
 | DB_PASSWORD | `odoo`             | Password for the PostgreSQL connection.           |
-
-### Optional Options
-
-These variables let you fine-tune your Odoo configuration. Due to how Odoo works, you  may need to uncomment these items in your 
-`odoo.conf` file.
-
-| Variable               | Default Value                        | Description                                                            |
-| ---------------------- | ------------------------------------ | ---------------------------------------------------------------------- |
 | DB_NAME                | `postgres`                           | Name of the database to connect to.                                    |
 | DATA_DIR    | `/volumes/data`    | Directory where Odoo stores its data/filestore.   |
 | ODOO_DEFAULT_ADDONS    | `/odoo/addons`                       | Location of the default Odoo addons.                                   |
