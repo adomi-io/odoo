@@ -21,8 +21,9 @@ Getting Started
 ---
 
 Pull the latest nightly build for your version of Odoo (e.g., 18.0):
-####
-    docker pull ghcr.io/adomi-io/odoo:18.0
+```bash
+docker pull ghcr.io/adomi-io/odoo:18.0
+```
 
 Supported Versions
 ---
