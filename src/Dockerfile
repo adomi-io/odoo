@@ -57,7 +57,6 @@ RUN apk add --update --no-cache \
     openldap-dev \
     envsubst
 
-
 # wkhtmltopdf copy bins from ext image
 COPY --from=wkhtmltopdf /bin/wkhtmltopdf /bin
 
@@ -78,7 +77,6 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Copy the Odoo install
 COPY --from=source /odoo .
 RUN pip install --no-cache-dir .
-
 
 ## Copy entrypoint + config
 COPY entrypoint.sh /
