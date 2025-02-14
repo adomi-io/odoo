@@ -1,5 +1,5 @@
 # Adomi-io - Odoo
-adomi/odoo mirrors the latest code from the official Odoo GitHub repository and is built nightly, 
+This repository mirrors the latest code from the official Odoo GitHub repository and is built nightly, 
 ensuring you always run the most up-to-date version for your specific Odoo release.
 
 Designed with multi-tenancy and cloud deployments in mind, this Docker container is ideal 
@@ -40,10 +40,7 @@ Docker Compose
 version: '3.8'
 services:
   odoo:
-    build:
-      context: ./src
-      dockerfile: Dockerfile
-    container_name: odoo
+    image: ghcr.io/adomi-io/odoo:18.0
     ports:
       - "8069:8069"
       - "8071:8071"
