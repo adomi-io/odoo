@@ -10,10 +10,17 @@ simple to customize your setup without modifying the base image.
 Features
 ---
 
-- **Cloud Ready:** Optimized for scalable deployments in modern cloud environments, including AWS ECS, Kubernetes, Lightsail, and Digital Ocean.
-- **Multi-Tenant Ready:** Designed to support multiple tenants efficiently, ideal for SaaS applications and shared deployments.
-- **Flexible Configuration:** Configure your Odoo instance securely and instantly via environment variables and secret files. No need to rebuild the base image. Scale your deployments easily.
-- **Community Driven:** Built and maintained with community contributions
+## ☁️ Cloud Ready
+Optimized for scalable deployments in modern cloud environments, including AWS ECS, Kubernetes, Lightsail, and Digital Ocean.  
+
+## 🏢 Multi-Tenant Support
+Designed for seamless multi-tenant support, making it perfect for SaaS applications and shared deployments.  
+
+## ⚙️ Flexible Configuration
+Instantly configure your Odoo instance with environment variables and secret files—no need to rebuild the base image. Easily scale your deployments with minimal effort.  
+
+## 🌍 Community Driven 
+Built and maintained with community contributions, ensuring continuous improvements and innovation.  
 
 Getting Started
 ---
