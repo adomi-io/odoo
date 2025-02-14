@@ -47,7 +47,6 @@ services:
       - "8072:8072"
     environment:
       # Mandatory Options
-      DATA_DIR: ${DATA_DIR:-/volumes/data}
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
       DB_USER: ${DB_USER:-odoo}
@@ -55,6 +54,7 @@ services:
 
       # Optional Options
       # DB_NAME: ${DB_NAME:-postgres}
+      # DATA_DIR: ${DATA_DIR:-/volumes/data}
       # ODOO_DEFAULT_ADDONS: ${ODOO_ADDONS_LOCATION:-/odoo/addons}
       # EXTRA_ADDONS: ${EXTRA_ADDONS:-/volumes/addons}
       # ADDONS_PATH: ${ADDONS_PATH:-/odoo/addons,/volumes/addons}
@@ -249,5 +249,5 @@ To add a new configuration variable:
 License
 ---
 
-For license details, see the [LICENSE](https://github.com/adomi-io/odoo/blob/main/LICENSE) file in the repository.
+For license details, see the [LICENSE](https://github.com/adomi-io/odoo/blob/master/LICENSE) file in the repository.
 
