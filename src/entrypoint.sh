@@ -54,7 +54,7 @@ fi
 
 # Substitute environment variables into the config file
 # and write them back to the Odoo config
-envsubst < /etc/odoo/odoo.conf > "${ODOO_RC}"
+envsubst < /volumes/config > "${ODOO_RC}"
 
 case "$1" in
     -- | odoo)

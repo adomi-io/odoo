@@ -27,7 +27,7 @@ def check_postgres_status(host="localhost", port=5432, user="postgres", timeout=
 
 
 if __name__ == '__main__':
-    default_config_path = os.getenv('ODOO_RC', '/etc/odoo/odoo_docker.conf')
+    default_config_path = os.getenv('ODOO_RC', '/etc/odoo/odoo_generated.conf')
     default_psql_wait_timeout = os.getenv('PSQL_WAIT_TIMEOUT', 30)
 
     arg_parser = argparse.ArgumentParser()
