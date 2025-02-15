@@ -26,7 +26,7 @@ WORKDIR /odoo
 ENV LANG=en_US.UTF-8
 
 # Set the location of the generated Odoo conf
-ENV ODOO_RC=/etc/odoo/odoo_docker.conf
+ENV ODOO_RC=/etc/odoo/odoo_generated.conf
 
 # Upgrade pip
 RUN pip install --no-cache-dir --upgrade pip
@@ -80,12 +80,12 @@ RUN pip install --no-cache-dir .
 
 ## Copy entrypoint + config
 COPY entrypoint.sh /
-COPY odoo.conf /etc/odoo/odoo.conf
+COPY odoo.conf /volumes/config
 
 # Create the related files and folders for Odoo
-RUN touch /etc/odoo/odoo_docker.conf && \
+RUN touch /etc/odoo/odoo_generated.conf && \
     chmod +x /entrypoint.sh && \
-    chown odoo:odoo /etc/odoo/odoo.conf /etc/odoo/odoo_docker.conf && \
+    chown odoo:odoo /volumes/config /etc/odoo/odoo_generated.conf && \
     mkdir -p /volumes/addons && \
     chown -R odoo /volumes/addons && \
     mkdir /volumes/data && \

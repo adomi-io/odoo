@@ -17,13 +17,6 @@ Features
 - 🔧 **Flexible Configuration:** Customize your Odoo instance instantly with environment variables and secret files—no rebuilds needed. Scale effortlessly.  
 - 🤝 **Community Driven:** Built and maintained by the community, ensuring continuous improvements and real-world usability.  
 
-Getting Started
----
-
-Pull the latest nightly build for your version of Odoo (e.g., 18.0):
-```bash
-docker pull ghcr.io/adomi-io/odoo:18.0
-```
 
 Supported Versions
 ---
@@ -33,8 +26,25 @@ Supported Versions
 | [17.0](https://github.com/adomi-io/odoo/tree/17.0)        | ```docker pull ghcr.io/adomi-io/odoo:17.0```       |
 | [16.0](https://github.com/adomi-io/odoo/tree/16.0)        | ```docker pull ghcr.io/adomi-io/odoo:16.0```       |
 
+Getting Started
+---
+
+Pull the latest nightly build for your version of Odoo (e.g., 18.0):
+
+```bash
+docker pull ghcr.io/adomi-io/odoo:18.0
+```
+
+
+### Run the container
+#### Start a Postgres database
+```bash
+
+```
+
 Docker Compose 
 ---
+This Docker Compose file will launch a copy of Odoo along with a Postgres database.
 
 ```yaml
 version: '3.8'
@@ -115,11 +125,59 @@ volumes:
   pg_data:
 ```
 
-Odoo Configuration File
+## Mount a configuration file
+
+By default, this image generates an Odoo configuration dynamically using environment variables. 
+However, you can mount a custom `odoo.conf` file to override settings directly.
+
+### Step 1: Create or Update `odoo.conf`
+
+Modify or create a new `odoo.conf` file with your custom settings. For example:
+
+```ini
+[options]
+db_host = db
+db_port = $DB_PORT
+db_user = $DB_USER
+db_password = odoo
+admin_passwd = my_secure_admin_password
+workers = 2
+```
+
+### Step 2: Mount the Configuration File
+
+#### Docker Compose
+To use your custom configuration file, update your docker-compose.yml 
+to mount it to `/volumes/config/odoo.conf`:
+
+```yaml
+version: '3.8'
+services:
+  odoo:
+    image: ghcr.io/adomi-io/odoo:18.0
+    # ...
+    volumes:
+      - ./odoo.conf:/volumes/config/odoo.conf # Add this to your docker compose configuration
+```
+
+#### Docker
+Add the `-v $(pwd)/odoo.conf:/volumes/config/odoo.conf` flag to your `docker run` command. Eg:
+
+```
+docker run -d \
+  --name odoo \
+  -p 8069:8069 \
+  -v $(pwd)/odoo.conf:/volumes/config/odoo.conf \
+  ghcr.io/adomi-io/odoo:18.0
+```
+
+
+
+Default Odoo Configuration File
 ---
 This image includes a default Odoo configuration, which you can override, modify, or hardcode as needed.  
 
-The configuration file is located at `/etc/odoo/odoo.conf`.
+The configuration file is located at `/volumes/config`.
 
 Some configuration options, when set, alter Odoo’s default behavior. To maintain flexibility, many supported options are included but commented out by default.  
 
