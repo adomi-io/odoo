@@ -83,7 +83,8 @@ COPY entrypoint.sh /
 COPY odoo.conf /volumes/config
 
 # Create the related files and folders for Odoo
-RUN touch /etc/odoo/odoo_generated.conf && \
+RUN mkdir odoo:odoo /etc/odoo && \
+    touch /etc/odoo/odoo_generated.conf && \
     chmod +x /entrypoint.sh && \
     chown odoo:odoo /volumes/config /etc/odoo/odoo_generated.conf && \
     mkdir -p /volumes/addons && \
