@@ -62,7 +62,7 @@ services:
       - ./addons:/volumes/addons
     depends_on:
       - db
-    command: ["--", "-d", "testing", "--stop-after-init", "--update=base,sale", "--test-enable"]
+    command: ["--", "-d", "testing", "--stop-after-init", "--update=base,web", "--test-enable"]
   db:
     image: postgres:13
     container_name: odoo_db

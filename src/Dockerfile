@@ -1,4 +1,4 @@
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.10
 ARG NODE_VERSION=22
 ARG WKHTMLTOPDF_VERSION=3.21.2-0.12.6
 
@@ -56,6 +56,9 @@ ENV LANG=en_US.UTF-8
 # Set the location of the generated Odoo conf
 ENV ODOO_RC=/etc/odoo/odoo_generated.conf
 
+RUN python -m venv /venv
+ENV PATH="/venv/bin:$PATH"
+
 # Upgrade pip
 RUN pip install --no-cache-dir --upgrade pip
 
@@ -84,7 +87,12 @@ RUN apk add --update --no-cache \
     libxslt-dev \
     openldap-dev \
     cairo-dev \
-    envsubst
+    py3-cairo \
+    envsubst \
+    cyrus-sasl-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    zlib-dev
 
 # wkhtmltopdf copy bins from ext image
 COPY --from=wkhtmltopdf /bin/wkhtmltopdf /bin
