@@ -4,6 +4,34 @@ ARG WKHTMLTOPDF_VERSION=3.21.2-0.12.6
 
 FROM surnet/alpine-wkhtmltopdf:${WKHTMLTOPDF_VERSION}-full AS wkhtmltopdf
 FROM node:${NODE_VERSION}-alpine AS node
+
+#FROM alpine:latest AS source
+#
+#ENV ODOO_VERSION=18.0
+#ENV ODOO_REPOSITORY=https://github.com/odoo/odoo.git
+#
+#WORKDIR /odoo
+#
+#RUN apk add --no-cache curl bash grep gawk coreutils xz
+#ARG BASE_URL="http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb"
+##ARG SOURCES_URL="http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/Sources"
+#
+#RUN set -eux; \
+#    # 1. Get the line from the Sources file
+#    line="$(curl -s "$BASE_URL/Sources" \
+#      | awk '/^Checksums-Sha256:/{f=1;next}/^Files:/{f=0}f' \
+#      | grep '.tar.xz')"; \
+#    # 2. Parse out SHA256, size, and filename using awk
+#    sha256="$(echo "$line" | awk '{print $1}')"; \
+#    size="$(echo "$line" | awk '{print $2}')"; \
+#    filename="$(echo "$line" | awk '{print $3}')"; \
+#    # 3. Download the file
+#    curl -fSL -o "odoo.tar.xz" "${BASE_URL}/${filename}"; \
+#    echo "$sha256  odoo.tar.xz" | sha256sum --check -; \
+#    # 5. Unpack it
+#    tar -xf "odoo.tar.xz" -C . --strip-components=1
+#RUN rm -rf odoo.tar.xz
+
 FROM alpine/git AS source
 
 ENV ODOO_VERSION=18.0
@@ -55,6 +83,7 @@ RUN apk add --update --no-cache \
     postgresql-dev \
     libxslt-dev \
     openldap-dev \
+    cairo-dev \
     envsubst
 
 # wkhtmltopdf copy bins from ext image
@@ -80,6 +109,7 @@ RUN pip install --no-cache-dir .
 
 ## Copy entrypoint + config
 COPY entrypoint.sh /
+COPY test.sh /
 COPY odoo.conf /volumes/config
 
 # Create the related files and folders for Odoo

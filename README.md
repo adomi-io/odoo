@@ -1,20 +1,21 @@
 # Adomi-io - Odoo
-This repository mirrors the latest code from the official Odoo GitHub repository and is built nightly, 
-ensuring you always run the most up-to-date version for your specific Odoo release.
+
+Configuration is streamlined through environment variables, making it 
+simple to customize your setup without modifying the base image.
 
 Designed with multi-tenancy and cloud deployments in mind, this Docker container is ideal 
 for running on platforms such as AWS ECS, Kubernetes, and more, or for building custom software 
 solutions on top of Odoo. 
 
-Configuration is streamlined through environment variables, making it 
-simple to customize your setup without modifying the base image.
+This repository mirrors the latest code from the official Odoo GitHub repository and is built nightly, 
+ensuring you always run the most up-to-date version for your specific Odoo release.
 
 Features
 ---
 
+- 🔧 **Flexible Configuration:** Customize your Odoo instance instantly with environment variables and secret files—no rebuilds needed. Scale effortlessly.  
 - 🚀 **Cloud Native:** Designed for high-scale deployments on AWS ECS, Kubernetes, Lightsail, and Digital Ocean. Deploy anywhere with ease.  
 - 🏗️ **Multi-Tenant Ready:** Optimized for SaaS and shared environments, supporting multiple tenants effortlessly.  
-- 🔧 **Flexible Configuration:** Customize your Odoo instance instantly with environment variables and secret files—no rebuilds needed. Scale effortlessly.  
 - 🤝 **Community Driven:** Built and maintained by the community, ensuring continuous improvements and real-world usability.  
 
 
@@ -39,7 +40,23 @@ docker pull ghcr.io/adomi-io/odoo:18.0
 ### Run the container
 #### Start a Postgres database
 ```bash
+docker run -d \
+  --name odoo_db \
+  -e POSTGRES_USER=odoo \
+  -e POSTGRES_PASSWORD=odoo \
+  -e POSTGRES_DB=postgres \
+  -p 5432:5432 \
+  postgres:13
+```
 
+```bash
+docker run --name odoo \
+  -p 8069:8069 \
+  -e DB_HOST=odoo_db \
+  -e DB_PORT=5432 \
+  -e DB_USER=odoo \
+  -e DB_PASSWORD=odoo \
+  ghcr.io/adomi-io/odoo:18.0
 ```
 
 Docker Compose 
