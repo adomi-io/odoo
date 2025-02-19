@@ -1,37 +1,9 @@
-ARG PYTHON_VERSION=3.10
+ARG PYTHON_VERSION=3.12
 ARG NODE_VERSION=22
 ARG WKHTMLTOPDF_VERSION=3.21.2-0.12.6
 
 FROM surnet/alpine-wkhtmltopdf:${WKHTMLTOPDF_VERSION}-full AS wkhtmltopdf
 FROM node:${NODE_VERSION}-alpine AS node
-
-#FROM alpine:latest AS source
-#
-#ENV ODOO_VERSION=18.0
-#ENV ODOO_REPOSITORY=https://github.com/odoo/odoo.git
-#
-#WORKDIR /odoo
-#
-#RUN apk add --no-cache curl bash grep gawk coreutils xz
-#ARG BASE_URL="http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb"
-##ARG SOURCES_URL="http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/Sources"
-#
-#RUN set -eux; \
-#    # 1. Get the line from the Sources file
-#    line="$(curl -s "$BASE_URL/Sources" \
-#      | awk '/^Checksums-Sha256:/{f=1;next}/^Files:/{f=0}f' \
-#      | grep '.tar.xz')"; \
-#    # 2. Parse out SHA256, size, and filename using awk
-#    sha256="$(echo "$line" | awk '{print $1}')"; \
-#    size="$(echo "$line" | awk '{print $2}')"; \
-#    filename="$(echo "$line" | awk '{print $3}')"; \
-#    # 3. Download the file
-#    curl -fSL -o "odoo.tar.xz" "${BASE_URL}/${filename}"; \
-#    echo "$sha256  odoo.tar.xz" | sha256sum --check -; \
-#    # 5. Unpack it
-#    tar -xf "odoo.tar.xz" -C . --strip-components=1
-#RUN rm -rf odoo.tar.xz
-
 FROM alpine/git AS source
 
 ENV ODOO_VERSION=18.0
@@ -47,17 +19,106 @@ RUN git clone  \
     ${ODOO_REPOSITORY} .
 
 FROM python:${PYTHON_VERSION}-alpine
-LABEL maintainer="Adomi Software, LLC <github@adomisoftware.com>"
 
 WORKDIR /odoo
 
+ARG TARGETARCH
+
+# Docker labels
+LABEL source="odoo" \
+      maintainer="Adomi Software, LLC <github@adomisoftware.com>" \
+      uploaders="Adomi Software, LLC <github@adomisoftware.com>" \
+      homepage="https://www.github.com/adomi-io/odoo" \
+      vcs_git="https://www.github.com/adomi-io/odoo" \
+      vcs_browser="https://www.github.com/adomi-io/odoo"
+
+# Setup environment
 ENV LANG=en_US.UTF-8
 
 # Set the location of the generated Odoo conf
-ENV ODOO_RC=/etc/odoo/odoo_generated.conf
+ENV ODOO_RC=/volumes/config/_generated.conf
+ENV ODOO_CONFIG=/volumes/config/odoo.conf
 
-RUN python -m venv /venv
-ENV PATH="/venv/bin:$PATH"
+# Supported Odoo config options
+ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
+    ODOO_DEFAULT_ADDONS="/odoo/addons" \
+    EXTRA_ADDONS="/volumes/addons" \
+    ADDONS_PATH="/odoo/addons,/volumes/addons" \
+    ODOO_SAVE="False" \
+    ODOO_INIT="" \
+    ODOO_UPDATE="" \
+    ODOO_WITHOUT_DEMO="False" \
+    ODOO_IMPORT_PARTIAL="" \
+    ODOO_PIDFILE="" \
+    ODOO_ADDONS_PATH="" \
+    ODOO_UPGRADE_PATH="" \
+    ODOO_SERVER_WIDE_MODULES="base,web" \
+    ODOO_DATA_DIR="/var/lib/odoo" \
+    ODOO_HTTP_INTERFACE="" \
+    ODOO_HTTP_PORT="8069" \
+    ODOO_GEVENT_PORT="8072" \
+    ODOO_HTTP_ENABLE="True" \
+    ODOO_PROXY_MODE="False" \
+    ODOO_X_SENDFILE="False" \
+    ODOO_DBFILTER="" \
+    ODOO_TEST_FILE="False" \
+    ODOO_TEST_ENABLE="" \
+    ODOO_TEST_TAGS="" \
+    ODOO_SCREENCASTS="" \
+    ODOO_SCREENSHOTS="/tmp/odoo_tests" \
+    ODOO_LOGFILE="" \
+    ODOO_SYSLOG="False" \
+    ODOO_LOG_HANDLER=":INFO" \
+    ODOO_LOG_DB="False" \
+    ODOO_LOG_DB_LEVEL="warning" \
+    ODOO_LOG_LEVEL="info" \
+    ODOO_EMAIL_FROM="False" \
+    ODOO_FROM_FILTER="False" \
+    ODOO_SMTP_SERVER="localhost" \
+    ODOO_SMTP_PORT="25" \
+    ODOO_SMTP_SSL="False" \
+    ODOO_SMTP_USER="False" \
+    ODOO_SMTP_PASSWORD="False" \
+    ODOO_SMTP_SSL_CERTIFICATE_FILENAME="False" \
+    ODOO_SMTP_SSL_PRIVATE_KEY_FILENAME="False" \
+    ODOO_DB_NAME="False" \
+    ODOO_DB_USER="False" \
+    ODOO_DB_PASSWORD="False" \
+    ODOO_PG_PATH="" \
+    ODOO_DB_HOST="False" \
+    ODOO_DB_REPLICA_HOST="False" \
+    ODOO_DB_PORT="False" \
+    ODOO_DB_REPLICA_PORT="False" \
+    ODOO_DB_SSLMODE="prefer" \
+    ODOO_DB_MAXCONN="64" \
+    ODOO_DB_MAXCONN_GEVENT="False" \
+    ODOO_DB_TEMPLATE="template0" \
+    ODOO_LOAD_LANGUAGE="" \
+    ODOO_LANGUAGE="" \
+    ODOO_TRANSLATE_OUT="" \
+    ODOO_TRANSLATE_IN="" \
+    ODOO_OVERWRITE_EXISTING_TRANSLATIONS="False" \
+    ODOO_TRANSLATE_MODULES="" \
+    ODOO_LIST_DB="True" \
+    ODOO_DEV_MODE="" \
+    ODOO_SHELL_INTERFACE="" \
+    ODOO_STOP_AFTER_INIT="False" \
+    ODOO_OSV_MEMORY_COUNT_LIMIT="0" \
+    ODOO_TRANSIENT_AGE_LIMIT="1.0" \
+    ODOO_MAX_CRON_THREADS="2" \
+    ODOO_LIMIT_TIME_WORKER_CRON="0" \
+    ODOO_UNACCENT="False" \
+    ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
+    ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
+    ODOO_WORKERS="0" \
+    ODOO_LIMIT_MEMORY_SOFT="2147483648" \
+    ODOO_LIMIT_MEMORY_SOFT_GEVENT="False" \
+    ODOO_LIMIT_MEMORY_HARD="2684354560" \
+    ODOO_LIMIT_MEMORY_HARD_GEVENT="False" \
+    ODOO_LIMIT_TIME_CPU="60" \
+    ODOO_LIMIT_TIME_REAL="120" \
+    ODOO_LIMIT_TIME_REAL_CRON="-1" \
+    ODOO_LIMIT_REQUEST="65536"
 
 # Upgrade pip
 RUN pip install --no-cache-dir --upgrade pip
@@ -86,13 +147,7 @@ RUN apk add --update --no-cache \
     postgresql-dev \
     libxslt-dev \
     openldap-dev \
-    cairo-dev \
-    py3-cairo \
-    envsubst \
-    cyrus-sasl-dev \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    zlib-dev
+    envsubst
 
 # wkhtmltopdf copy bins from ext image
 COPY --from=wkhtmltopdf /bin/wkhtmltopdf /bin
@@ -117,8 +172,7 @@ RUN pip install --no-cache-dir .
 
 ## Copy entrypoint + config
 COPY entrypoint.sh /
-COPY test.sh /
-COPY odoo.conf /volumes/config
+COPY odoo.conf /volumes/config/odoo.conf
 
 # Create the related files and folders for Odoo
 RUN mkdir odoo:odoo /etc/odoo && \
@@ -130,7 +184,7 @@ RUN mkdir odoo:odoo /etc/odoo && \
     mkdir /volumes/data && \
     chown -R odoo /volumes/data
 
-VOLUME ["/volumes/data", "/volumes/addons"]
+VOLUME ["/volumes/data", "/volumes/addons", "/volumes/secrets", "/volumes/config"]
 
 # Expose Odoo services
 EXPOSE 8069 8071 8072
