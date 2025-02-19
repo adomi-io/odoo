@@ -1,36 +1,34 @@
 # Adomi-io - Odoo
 
-Configuration is streamlined through environment variables, making it
-simple to customize your setup without modifying the base image.
+This is an Odoo Docker container that is made for developers or infrastructure teams who are looking
+to launch Odoo into the cloud, companies who want a reliable and open build process, or startups looking
+to offer Odoo as part of a SaaS or IaaS offering.
 
-Designed with multi-tenancy and cloud deployments in mind, this Docker container is ideal
-for running on platforms such as AWS ECS, Kubernetes, and more, or for building custom software
-solutions on top of Odoo.
+Odoo Configuration is generated through environment variables, making it
+simple to customize your setup without modifying your base image, automate deployments, 
+and scale your Odoo instances effortlessly.
 
-This repository mirrors the latest code from the official Odoo GitHub repository and is built nightly,
+This repository mirrors the latest code from the official [Odoo GitHub repository](https://github.com/odoo/odoo) and is built nightly,
 ensuring you always run the most up-to-date version for your specific Odoo release.
 
 Features
 ---
 
-- 🔧 **Flexible Configuration:** Customize your Odoo instance instantly with environment variables and secret files—no
-  rebuilds needed. Scale effortlessly.
-- 🚀 **Cloud Native:** Designed for high-scale deployments on AWS ECS, Kubernetes, Lightsail, and Digital Ocean. Deploy
-  anywhere with ease.
-- 🏗️ **Multi-Tenant Ready:** Optimized for SaaS and shared environments, supporting multiple tenants effortlessly.
-- 🤝 **Community Driven:** Built and maintained by the community, ensuring continuous improvements and real-world
-  usability.
+- 🔧 **Flexible Configuration:** Customize your Odoo instance with environment variables and secret files, no rebuilds needed.
+- 🚀 **Cloud Native:** Configure your Odoo containers from Amazon ECS, Kubernetes, Digital Ocean, or other cloud providers easily.
+- 🏗️ **Multi-Tenant Ready:** Built for SaaS and IaaS companies looking to support multiple Odoo tenants.
+- 🤝 **Community Driven:** Built and maintained by the community, ensuring continuous improvements and real-world usability.
 
-Supported Versions
+Supported versions
 ---
 
-| Version                                            | Pull Command                                 |
+| Odoo                                               | Pull Command                                 |
 |----------------------------------------------------|----------------------------------------------|
 | [18.0](https://github.com/adomi-io/odoo/tree/18.0) | ```docker pull ghcr.io/adomi-io/odoo:18.0``` |
 | [17.0](https://github.com/adomi-io/odoo/tree/17.0) | ```docker pull ghcr.io/adomi-io/odoo:17.0``` |
 | [16.0](https://github.com/adomi-io/odoo/tree/16.0) | ```docker pull ghcr.io/adomi-io/odoo:16.0``` |
 
-Getting Started
+Getting started
 ---
 
 Pull the latest nightly build for your version of Odoo (e.g., 18.0):
@@ -39,9 +37,10 @@ Pull the latest nightly build for your version of Odoo (e.g., 18.0):
 docker pull ghcr.io/adomi-io/odoo:18.0
 ```
 
-### Run the container
+Run this container
+---
 
-#### Start a Postgres database
+### Start a `Postgres` container (Optional)
 
 ```bash
 docker run -d \
@@ -52,14 +51,14 @@ docker run -d \
   -p 5432:5432 \
   postgres:13
 ```
-
+### Start an `Odoo` container
 ```bash
 docker run --name odoo \
   -p 8069:8069 \
-  -e DB_HOST=odoo_db \
-  -e DB_PORT=5432 \
-  -e DB_USER=odoo \
-  -e DB_PASSWORD=odoo \
+  -e ODOO_DB_HOST=odoo_db \
+  -e ODOO_DB_PORT=5432 \
+  -e ODOO_DB_USER=odoo \
+  -e ODOO_DB_PASSWORD=odoo \
   ghcr.io/adomi-io/odoo:18.0
 ```
 
@@ -77,52 +76,10 @@ services:
       - "8071:8071"
       - "8072:8072"
     environment:
-      # Mandatory Options
-      DB_HOST: ${DB_HOST:-db}
-      DB_PORT: ${DB_PORT:-5432}
-      DB_USER: ${DB_USER:-odoo}
-      DB_PASSWORD: ${DB_PASSWORD:-odoo}
-
-      # Optional Options
-      # DB_NAME: ${DB_NAME:-postgres}
-      # DATA_DIR: ${DATA_DIR:-/volumes/data}
-      # ODOO_DEFAULT_ADDONS: ${ODOO_ADDONS_LOCATION:-/odoo/addons}
-      # EXTRA_ADDONS: ${EXTRA_ADDONS:-/volumes/addons}
-      # ADDONS_PATH: ${ADDONS_PATH:-/odoo/addons,/volumes/addons}
-      # ADMIN_PASSWD: ${ADMIN_PASSWD:-admin}
-      # CSV_INTERNAL_SEP: ${CSV_INTERNAL_SEP:-,}
-      # DB_MAXCONN: ${DB_MAXCONN:-64}
-      # DB_TEMPLATE: ${DB_TEMPLATE:-template1}
-      # DBFILTER: ${DBFILTER:-.*}
-      # DEBUG_MODE: ${DEBUG_MODE:-False}
-      # EMAIL_FROM: ${EMAIL_FROM:-False}
-      # LIMIT_MEMORY_HARD: ${LIMIT_MEMORY_HARD:-2684354560}
-      # LIMIT_MEMORY_SOFT: ${LIMIT_MEMORY_SOFT:-2147483648}
-      # LIMIT_REQUEST: ${LIMIT_REQUEST:-8192}
-      # LIMIT_TIME_CPU: ${LIMIT_TIME_CPU:-60}
-      # LIMIT_TIME_REAL: ${LIMIT_TIME_REAL:-120}
-      # LIST_DB: ${LIST_DB:-True}
-      # LOG_DB: ${LOG_DB:-False}
-      # LOG_HANDLER: ${LOG_HANDLER:-[:INFO]}
-      # LOG_LEVEL: ${LOG_LEVEL:-info}
-      # LOGFILE: ${LOGFILE:-None}
-      # LONGPOLLING_PORT: ${LONGPOLLING_PORT:-8072}
-      # MAX_CRON_THREADS: ${MAX_CRON_THREADS:-2}
-      # TRANSIENT_AGE_LIMIT: ${TRANSIENT_AGE_LIMIT:-1.0}
-      # OSV_MEMORY_COUNT_LIMIT: ${OSV_MEMORY_COUNT_LIMIT:-False}
-      # SMTP_PASSWORD: ${SMTP_PASSWORD:-False}
-      # SMTP_PORT: ${SMTP_PORT:-25}
-      # SMTP_SERVER: ${SMTP_SERVER:-localhost}
-      # SMTP_SSL: ${SMTP_SSL:-False}
-      # SMTP_USER: ${SMTP_USER:-False}
-      # WORKERS: ${WORKERS:-0}
-      # XMLRPC: ${XMLRPC:-True}
-      # XMLRPC_INTERFACE: ${XMLRPC_INTERFACE:-}
-      # XMLRPC_PORT: ${XMLRPC_PORT:-8069}
-      # XMLRPCS: ${XMLRPCS:-True}
-      # XMLRPCS_INTERFACE: ${XMLRPCS_INTERFACE:-}
-      # XMLRPCS_PORT: ${XMLRPCS_PORT:-8071}
-      # PSQL_WAIT_TIMEOUT: ${PSQL_WAIT_TIMEOUT:-30}
+      ODOO_DB_HOST: ${ODOO_DB_HOST:-db}
+      ODOO_DB_PORT: ${ODOO_DB_PORT:-5432}
+      ODOO_DB_USER: ${ODOO_DB_USER:-odoo}
+      ODOO_DB_PASSWORD: ${ODOO_DB_PASSWORD:-odoo}
     volumes:
       - odoo_data:/volumes/data
       - ./addons:/volumes/addons
