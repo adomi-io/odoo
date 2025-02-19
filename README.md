@@ -20,6 +20,14 @@ Features
 - 🤝 **Community Driven:** Built and maintained by the community, ensuring continuous improvements and real-world usability.
 
 
+Table of Contents
+---
+
+- [Getting Started](#getting-started) 
+- [Run This Container](#run-this-container)
+  - [Docker](#docker)
+  - [Docker Compose](#docker-compose)
+
 ---
 
 # Getting started
@@ -106,6 +114,8 @@ volumes:
 ```
 
 ---
+
+# Configure Odoo
 
 ## Mount a configuration file
 
