@@ -11,8 +11,7 @@ and scale your Odoo instances effortlessly.
 This repository mirrors the latest code from the official [Odoo GitHub repository](https://github.com/odoo/odoo) and is built nightly,
 ensuring you always run the most up-to-date version for your specific Odoo release.
 
-Features
----
+## Features
 
 - 🔧 **Flexible Configuration:** Customize your Odoo instance with environment variables and secret files, no rebuilds needed.
 - 🚀 **Cloud Native:** Configure your Odoo containers from Amazon ECS, Kubernetes, Digital Ocean, or other cloud providers easily.
@@ -20,15 +19,14 @@ Features
 - 🤝 **Community Driven:** Built and maintained by the community, ensuring continuous improvements and real-world usability.
 
 
-Table of Contents
----
+## Table of Contents
 
 - [Getting Started](#getting-started) 
 - [Run This Container](#run-this-container)
   - [Docker](#docker)
   - [Docker Compose](#docker-compose)
 
-# Getting started
+## Getting started
 
 Pull the latest nightly build for your version of Odoo (e.g., 18.0):
 
@@ -36,8 +34,8 @@ Pull the latest nightly build for your version of Odoo (e.g., 18.0):
 docker pull ghcr.io/adomi-io/odoo:18.0
 ```
 
-Supported versions
----
+#### Supported versions
+
 
 | Odoo                                               | Pull Command                                 |
 |----------------------------------------------------|----------------------------------------------|
@@ -45,10 +43,9 @@ Supported versions
 | [17.0](https://github.com/adomi-io/odoo/tree/17.0) | ```docker pull ghcr.io/adomi-io/odoo:17.0``` |
 | [16.0](https://github.com/adomi-io/odoo/tree/16.0) | ```docker pull ghcr.io/adomi-io/odoo:16.0``` |
 
-# Run this container
+## Run this container
 
-Docker
----
+### Docker
 
 #### Start a `Postgres` container
 
@@ -72,8 +69,8 @@ docker run --name odoo \
   ghcr.io/adomi-io/odoo:18.0
 ```
 
-Docker Compose
----
+### Docker Compose
+
 This Docker Compose file will launch a copy of Odoo along with a Postgres database.
 
 ```yaml
@@ -136,6 +133,18 @@ workers = 2
 
 ### Step 2: Mount the Configuration File
 
+#### Docker
+
+Add the `-v $(pwd)/odoo.conf:/volumes/config/odoo.conf` flag to your `docker run` command. Eg:
+
+```
+docker run -d \
+  --name odoo \
+  -p 8069:8069 \
+  -v $(pwd)/odoo.conf:/volumes/config/odoo.conf \
+  ghcr.io/adomi-io/odoo:18.0
+```
+
 #### Docker Compose
 
 To use your custom configuration file, update your docker-compose.yml
@@ -149,18 +158,6 @@ services:
     # ...
     volumes:
       - ./odoo.conf:/volumes/config/odoo.conf # Add this to your docker compose configuration
-```
-
-#### Docker
-
-Add the `-v $(pwd)/odoo.conf:/volumes/config/odoo.conf` flag to your `docker run` command. Eg:
-
-```
-docker run -d \
-  --name odoo \
-  -p 8069:8069 \
-  -v $(pwd)/odoo.conf:/volumes/config/odoo.conf \
-  ghcr.io/adomi-io/odoo:18.0
 ```
 
 # Configure your Odoo instances
