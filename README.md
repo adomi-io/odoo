@@ -19,14 +19,8 @@ Features
 - 🏗️ **Multi-Tenant Ready:** Built for SaaS and IaaS companies looking to support multiple Odoo tenants. Support any Odoo configuration option easily.
 - 🤝 **Community Driven:** Built and maintained by the community, ensuring continuous improvements and real-world usability.
 
-Supported versions
----
 
-| Odoo                                               | Pull Command                                 |
-|----------------------------------------------------|----------------------------------------------|
-| [18.0](https://github.com/adomi-io/odoo/tree/18.0) | ```docker pull ghcr.io/adomi-io/odoo:18.0``` |
-| [17.0](https://github.com/adomi-io/odoo/tree/17.0) | ```docker pull ghcr.io/adomi-io/odoo:17.0``` |
-| [16.0](https://github.com/adomi-io/odoo/tree/16.0) | ```docker pull ghcr.io/adomi-io/odoo:16.0``` |
+---
 
 Getting started
 ---
@@ -36,6 +30,15 @@ Pull the latest nightly build for your version of Odoo (e.g., 18.0):
 ```bash
 docker pull ghcr.io/adomi-io/odoo:18.0
 ```
+
+Supported versions
+---
+
+| Odoo                                               | Pull Command                                 |
+|----------------------------------------------------|----------------------------------------------|
+| [18.0](https://github.com/adomi-io/odoo/tree/18.0) | ```docker pull ghcr.io/adomi-io/odoo:18.0``` |
+| [17.0](https://github.com/adomi-io/odoo/tree/17.0) | ```docker pull ghcr.io/adomi-io/odoo:17.0``` |
+| [16.0](https://github.com/adomi-io/odoo/tree/16.0) | ```docker pull ghcr.io/adomi-io/odoo:16.0``` |
 
 
 ---
