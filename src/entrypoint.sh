@@ -2,13 +2,6 @@
 
 set -e
 
-# Setup default configuration values
-export ODOO_CONFIG=${ODOO_CONFIG:-'/volumes/config/odoo.conf'}
-export ODOO_DEFAULT_ADDONS=${ODOO_ADDONS_LOCATION:-'/odoo/addons'}
-export EXTRA_ADDONS=${EXTRA_ADDONS:-/volumes/addons}
-export ADDONS_PATH="${ADDONS_PATH:-${ODOO_DEFAULT_ADDONS},${EXTRA_ADDONS}}"
-#!/usr/bin/env bash
-
 ####
 # Common options
 ####
