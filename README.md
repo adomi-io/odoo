@@ -101,6 +101,8 @@ volumes:
   pg_data:
 ```
 
+---
+
 ## Mount a configuration file
 
 By default, this image generates an Odoo configuration dynamically using environment variables.
