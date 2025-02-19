@@ -40,7 +40,7 @@ docker pull ghcr.io/adomi-io/odoo:18.0
 Run this container
 ---
 
-### Start a `Postgres` container (Optional)
+#### Start a `Postgres` container (Optional)
 
 ```bash
 docker run -d \
@@ -51,7 +51,7 @@ docker run -d \
   -p 5432:5432 \
   postgres:13
 ```
-### Start an `Odoo` container
+#### Start an `Odoo` container
 ```bash
 docker run --name odoo \
   -p 8069:8069 \
