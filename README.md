@@ -107,9 +107,6 @@ volumes:
   odoo_data:
   pg_data:
 ```
-
----
-
 # Configure Odoo
 
 ## Mount a configuration file
