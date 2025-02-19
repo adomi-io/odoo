@@ -28,8 +28,6 @@ Table of Contents
   - [Docker](#docker)
   - [Docker Compose](#docker-compose)
 
----
-
 # Getting started
 
 Pull the latest nightly build for your version of Odoo (e.g., 18.0):
