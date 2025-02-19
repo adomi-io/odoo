@@ -107,14 +107,35 @@ volumes:
   odoo_data:
   pg_data:
 ```
-# Configure Odoo
 
-## Mount a configuration file
+# Configure your Odoo instances
+
+This Docker container uses `envsubst` to generate an `odoo.conf` file based on  environment variables. What this means is you can configure your Odoo configuration at all stages of the image's lifecycle. You can hard-code values into your docker container,
+or set them at run-time as environment variables. This documentation will take you through configuring your Odoo instances
+
+If you just want to get started and dont care about this, you can see the default available options here:
+
+### [Skip to the default configuration file](#default-odoo-configuration-file)
+
+
+#### Overview 
+A default [odoo.conf](./src/odoo.conf) file is loaded into this image is built. When the entrypoint
+
+
+#### Note
+Odoo changes how it works based on some config values. Because of this, only a few environment variables are set in the default config file.
+
+To see an example config, please check the [odoo.conf](./src/odoo.conf) file in the `src` folder, or read more in the [Default Odoo Configuration File](#default-odoo-configuration-file)
+documentation. 
+
+## Basic Example
+
+### Mount a configuration file
 
 By default, this image generates an Odoo configuration dynamically using environment variables.
 However, you can mount a custom `odoo.conf` file to override settings directly.
 
-### Step 1: Create or Update `odoo.conf`
+#### Step 1: Create or Update `odoo.conf`
 
 Modify or create a new `odoo.conf` file with your custom settings. For example:
 
@@ -157,10 +178,8 @@ services:
       - ./odoo.conf:/volumes/config/odoo.conf # Add this to your docker compose configuration
 ```
 
-# Configure your Odoo instances
 
-Default Odoo Configuration File
----
+## Default Odoo Configuration File
 This image includes a default Odoo configuration, which you can override, modify, or hardcode as needed.
 
 The configuration file is located at `/volumes/config/odoo.conf`.
