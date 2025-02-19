@@ -21,7 +21,6 @@ Features
 
 
 ---
-
 Getting started
 ---
 
@@ -39,10 +38,6 @@ Supported versions
 | [18.0](https://github.com/adomi-io/odoo/tree/18.0) | ```docker pull ghcr.io/adomi-io/odoo:18.0``` |
 | [17.0](https://github.com/adomi-io/odoo/tree/17.0) | ```docker pull ghcr.io/adomi-io/odoo:17.0``` |
 | [16.0](https://github.com/adomi-io/odoo/tree/16.0) | ```docker pull ghcr.io/adomi-io/odoo:16.0``` |
-
-
----
-
 
 Run this container
 ---
