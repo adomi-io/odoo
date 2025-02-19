@@ -188,7 +188,7 @@ docker run -d \
   ghcr.io/adomi-io/odoo:18.0
 ```
 
-
+# Configure your Odoo instance
 
 Default Odoo Configuration File
 ---
@@ -251,53 +251,6 @@ Default Variables
 --- 
 These variables let you fine-tune your Odoo configuration. 
 
-
-| Variable               | Default Value                        | Description                                                            |
-| ---------------------- | ------------------------------------ | ---------------------------------------------------------------------- |
-| DB_HOST     | `db`               | Hostname of the PostgreSQL server.                |
-| DB_PORT     | `5432`             | Port number for the PostgreSQL server.            |
-| DB_USER     | `odoo`             | Username for the PostgreSQL connection.           |
-| DB_PASSWORD | `odoo`             | Password for the PostgreSQL connection.           |
-| DB_NAME                | `postgres`                           | Name of the database to connect to.                                    |
-| DATA_DIR    | `/volumes/data`    | Directory where Odoo stores its data/filestore.   |
-| ODOO_DEFAULT_ADDONS    | `/odoo/addons`                       | Location of the default Odoo addons.                                   |
-| EXTRA_ADDONS           | `/volumes/addons`                    | Directory for extra addons.                                            |
-| ADDONS_PATH            | `/odoo/addons,/volumes/addons`         | Comma-separated list of directories where Odoo looks for addons.       |
-| ADMIN_PASSWD           | `admin`                              | Administrator password for Odoo.                                       |
-| CSV_INTERNAL_SEP       | `,`                                  | Separator used for CSV files.                                          |
-| DB_MAXCONN             | `64`                                 | Maximum number of connections allowed to the PostgreSQL server.        |
-| DB_TEMPLATE            | `template1`                          | Template database used for creating new databases.                     |
-| DBFILTER               | `.*`                                 | Regex filter to limit the databases Odoo can see.                      |
-| DEBUG_MODE             | `False`                              | Enable debug mode (set to `True` to enable).                           |
-| EMAIL_FROM             | `False`                              | Default email address for outgoing emails.                             |
-| LIMIT_MEMORY_HARD      | `2684354560`                         | Hard memory limit for Odoo (in bytes).                                 |
-| LIMIT_MEMORY_SOFT      | `2147483648`                         | Soft memory limit for Odoo (in bytes).                                 |
-| LIMIT_REQUEST          | `8192`                               | Maximum size for incoming requests.                                    |
-| LIMIT_TIME_CPU         | `60`                                 | Maximum CPU time per request (in seconds).                             |
-| LIMIT_TIME_REAL        | `120`                                | Maximum real time per request (in seconds).                            |
-| LIST_DB                | `True`                               | Whether Odoo should list available databases.                          |
-| LOG_DB                 | `False`                              | Enable logging to the database.                                        |
-| LOG_HANDLER            | `[:INFO]`                           | Logging handler configuration.                                         |
-| LOG_LEVEL              | `info`                               | Logging verbosity level.                                               |
-| LOGFILE                | `None`                               | File path for logging output.                                          |
-| LONGPOLLING_PORT       | `8072`                               | Port used for long polling.                                            |
-| MAX_CRON_THREADS       | `2`                                  | Maximum number of cron threads.                                        |
-| TRANSIENT_AGE_LIMIT    | `1.0`                                | Age limit for transient records.                                       |
-| OSV_MEMORY_COUNT_LIMIT | `False`                              | Limit on OSV memory count.                                             |
-| SMTP_PASSWORD          | `False`                              | SMTP server password.                                                  |
-| SMTP_PORT              | `25`                                 | SMTP server port.                                                      |
-| SMTP_SERVER            | `localhost`                          | SMTP server hostname.                                                  |
-| SMTP_SSL               | `False`                              | Use SSL for SMTP connections.                                          |
-| SMTP_USER              | `False`                              | SMTP server username.                                                  |
-| WORKERS                | `0`                                  | Number of worker processes.                                            |
-| XMLRPC                 | `True`                               | Enable the XMLRPC interface.                                           |
-| XMLRPC_INTERFACE       | (empty)                              | Interface for XMLRPC (if not set, listens on all interfaces).          |
-| XMLRPC_PORT            | `8069`                               | Port for the XMLRPC interface.                                         |
-| XMLRPCS                | `True`                               | Enable the secure XMLRPC interface.                                    |
-| XMLRPCS_INTERFACE      | (empty)                              | Interface for secure XMLRPC.                                           |
-| XMLRPCS_PORT           | `8071`                               | Port for the secure XMLRPC interface.                                  |
-| PSQL_WAIT_TIMEOUT      | `30`                                 | Timeout (in seconds) for waiting on PostgreSQL to be ready.            |
-
 ---
 
 ## Adding New Environment Variables
@@ -310,6 +263,125 @@ To add a new configuration variable:
    my_custom_setting = $MY_CUSTOM_VAR
    ```
 3. **Deploy:** On container startup, the placeholder is replaced with the value from your environment.
+
+
+# Extending this image
+
+Setting Build-Time Defaults
+---
+If you would like pull a `config` item from your environment variables, but use
+a default across all your images, you can override the 
+
+
+
+Environment variable defaults
+---
+
+The Dockerfile is built with default environment variables. Double check the
+[Dockerfile](./src/Dockerfile) for more information
+
+```dockerfile
+
+ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
+    ODOO_DEFAULT_ADDONS="/odoo/addons" \
+    EXTRA_ADDONS="/volumes/addons" \
+    ADDONS_PATH="/odoo/addons,/volumes/addons" \
+    ODOO_SAVE="False" \
+    ODOO_INIT="" \
+    ODOO_UPDATE="" \
+    ODOO_WITHOUT_DEMO="False" \
+    ODOO_IMPORT_PARTIAL="" \
+    ODOO_PIDFILE="" \
+    ODOO_ADDONS_PATH="" \
+    ODOO_UPGRADE_PATH="" \
+    ODOO_SERVER_WIDE_MODULES="base,web" \
+    ODOO_DATA_DIR="/var/lib/odoo" \
+    ODOO_HTTP_INTERFACE="" \
+    ODOO_HTTP_PORT="8069" \
+    ODOO_GEVENT_PORT="8072" \
+    ODOO_HTTP_ENABLE="True" \
+    ODOO_PROXY_MODE="False" \
+    ODOO_X_SENDFILE="False" \
+    ODOO_DBFILTER="" \
+    ODOO_TEST_FILE="False" \
+    ODOO_TEST_ENABLE="" \
+    ODOO_TEST_TAGS="" \
+    ODOO_SCREENCASTS="" \
+    ODOO_SCREENSHOTS="/tmp/odoo_tests" \
+    ODOO_LOGFILE="" \
+    ODOO_SYSLOG="False" \
+    ODOO_LOG_HANDLER=":INFO" \
+    ODOO_LOG_DB="False" \
+    ODOO_LOG_DB_LEVEL="warning" \
+    ODOO_LOG_LEVEL="info" \
+    ODOO_EMAIL_FROM="False" \
+    ODOO_FROM_FILTER="False" \
+    ODOO_SMTP_SERVER="localhost" \
+    ODOO_SMTP_PORT="25" \
+    ODOO_SMTP_SSL="False" \
+    ODOO_SMTP_USER="False" \
+    ODOO_SMTP_PASSWORD="False" \
+    ODOO_SMTP_SSL_CERTIFICATE_FILENAME="False" \
+    ODOO_SMTP_SSL_PRIVATE_KEY_FILENAME="False" \
+    ODOO_DB_NAME="False" \
+    ODOO_DB_USER="False" \
+    ODOO_DB_PASSWORD="False" \
+    ODOO_PG_PATH="" \
+    ODOO_DB_HOST="False" \
+    ODOO_DB_REPLICA_HOST="False" \
+    ODOO_DB_PORT="False" \
+    ODOO_DB_REPLICA_PORT="False" \
+    ODOO_DB_SSLMODE="prefer" \
+    ODOO_DB_MAXCONN="64" \
+    ODOO_DB_MAXCONN_GEVENT="False" \
+    ODOO_DB_TEMPLATE="template0" \
+    ODOO_LOAD_LANGUAGE="" \
+    ODOO_LANGUAGE="" \
+    ODOO_TRANSLATE_OUT="" \
+    ODOO_TRANSLATE_IN="" \
+    ODOO_OVERWRITE_EXISTING_TRANSLATIONS="False" \
+    ODOO_TRANSLATE_MODULES="" \
+    ODOO_LIST_DB="True" \
+    ODOO_DEV_MODE="" \
+    ODOO_SHELL_INTERFACE="" \
+    ODOO_STOP_AFTER_INIT="False" \
+    ODOO_OSV_MEMORY_COUNT_LIMIT="0" \
+    ODOO_TRANSIENT_AGE_LIMIT="1.0" \
+    ODOO_MAX_CRON_THREADS="2" \
+    ODOO_LIMIT_TIME_WORKER_CRON="0" \
+    ODOO_UNACCENT="False" \
+    ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
+    ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
+    ODOO_WORKERS="0" \
+    ODOO_LIMIT_MEMORY_SOFT="2147483648" \
+    ODOO_LIMIT_MEMORY_SOFT_GEVENT="False" \
+    ODOO_LIMIT_MEMORY_HARD="2684354560" \
+    ODOO_LIMIT_MEMORY_HARD_GEVENT="False" \
+    ODOO_LIMIT_TIME_CPU="60" \
+    ODOO_LIMIT_TIME_REAL="120" \
+    ODOO_LIMIT_TIME_REAL_CRON="-1" \
+    ODOO_LIMIT_REQUEST="65536"
+```
+
+
+# Testing 
+
+Running Unit Tests
+---
+You can run unit tests with the docker compose file. This will spin up a Postgres
+database, install the addons of your choice, and run their corresponding unit tests.
+
+For example:
+
+```yml
+docker compose run --rm odoo -- \
+  -d "${TESTS_DATABASE}" \
+  --update="${TESTS_ADDONS}" \
+  --stop-after-init \
+  --test-enable
+```
+
+
 
 License
 ---

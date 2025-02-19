@@ -78,8 +78,9 @@ RUN npm install -g less less-plugin-clean-css rtlcss
 COPY --from=source /odoo/requirements.txt /odoo/requirements.txt
 
 # Install Odoo's requirements and the Odoo package
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip --verbose \
+    && pip install --no-cache-dir --verbose -r requirements.txt
+
 
 # Copy the Odoo install
 COPY --from=source /odoo .
@@ -91,100 +92,110 @@ ENV ODOO_CONFIG=/volumes/config/odoo.conf
 
 # Supported Odoo config options.
 # Fill these out to enable build-time defaults
-ENV ODOO_DATA_DIR="/volumes/data" \
+
+ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
+    ODOO_DEFAULT_ADDONS="/odoo/addons" \
+    EXTRA_ADDONS="/volumes/addons" \
     ADDONS_PATH="/odoo/addons,/volumes/addons" \
-    ODOO_CONFIG="/volumes/config/odoo.conf" \
-    ODOO_DB_USER="odoo" \
-    ODOO_DB_PASSWORD="odoo" \
-    ODOO_DB_HOST="db" \
-    ODOO_DB_PORT="5432" \
-    ODOO_DB_NAME="" \
-    ODOO_DB_REPLICA_HOST="" \
-    ODOO_DB_REPLICA_PORT="" \
-    ODOO_DB_SSLMODE="" \
-    ODOO_DB_MAXCONN="" \
-    ODOO_DB_MAXCONN_GEVENT="" \
-    ODOO_DB_TEMPLATE="" \
-    ODOO_PG_PATH="" \
-    ODOO_SAVE="" \
+    ODOO_SAVE="False" \
     ODOO_INIT="" \
     ODOO_UPDATE="" \
-    ODOO_WITHOUT_DEMO="" \
+    ODOO_WITHOUT_DEMO="False" \
     ODOO_IMPORT_PARTIAL="" \
     ODOO_PIDFILE="" \
     ODOO_ADDONS_PATH="" \
     ODOO_UPGRADE_PATH="" \
-    ODOO_SERVER_WIDE_MODULES="" \
+    ODOO_SERVER_WIDE_MODULES="base,web" \
+    ODOO_DATA_DIR="/var/lib/odoo" \
     ODOO_HTTP_INTERFACE="" \
-    ODOO_HTTP_PORT="" \
-    ODOO_GEVENT_PORT="" \
-    ODOO_HTTP_ENABLE="" \
-    ODOO_PROXY_MODE="" \
-    ODOO_X_SENDFILE="" \
+    ODOO_HTTP_PORT="8069" \
+    ODOO_GEVENT_PORT="8072" \
+    ODOO_HTTP_ENABLE="True" \
+    ODOO_PROXY_MODE="False" \
+    ODOO_X_SENDFILE="False" \
     ODOO_DBFILTER="" \
-    ODOO_TEST_FILE="" \
+    ODOO_TEST_FILE="False" \
     ODOO_TEST_ENABLE="" \
     ODOO_TEST_TAGS="" \
     ODOO_SCREENCASTS="" \
-    ODOO_SCREENSHOTS="" \
+    ODOO_SCREENSHOTS="/tmp/odoo_tests" \
     ODOO_LOGFILE="" \
-    ODOO_SYSLOG="" \
-    ODOO_LOG_HANDLER="" \
-    ODOO_LOG_DB="" \
-    ODOO_LOG_DB_LEVEL="" \
-    ODOO_LOG_LEVEL="" \
-    ODOO_EMAIL_FROM="" \
-    ODOO_FROM_FILTER="" \
-    ODOO_SMTP_SERVER="" \
-    ODOO_SMTP_PORT="" \
-    ODOO_SMTP_SSL="" \
-    ODOO_SMTP_USER="" \
-    ODOO_SMTP_PASSWORD="" \
-    ODOO_SMTP_SSL_CERTIFICATE_FILENAME="" \
-    ODOO_SMTP_SSL_PRIVATE_KEY_FILENAME="" \
+    ODOO_SYSLOG="False" \
+    ODOO_LOG_HANDLER=":INFO" \
+    ODOO_LOG_DB="False" \
+    ODOO_LOG_DB_LEVEL="warning" \
+    ODOO_LOG_LEVEL="info" \
+    ODOO_EMAIL_FROM="False" \
+    ODOO_FROM_FILTER="False" \
+    ODOO_SMTP_SERVER="localhost" \
+    ODOO_SMTP_PORT="25" \
+    ODOO_SMTP_SSL="False" \
+    ODOO_SMTP_USER="False" \
+    ODOO_SMTP_PASSWORD="False" \
+    ODOO_SMTP_SSL_CERTIFICATE_FILENAME="False" \
+    ODOO_SMTP_SSL_PRIVATE_KEY_FILENAME="False" \
+    ODOO_DB_NAME="False" \
+    ODOO_DB_USER="False" \
+    ODOO_DB_PASSWORD="False" \
+    ODOO_PG_PATH="" \
+    ODOO_DB_HOST="False" \
+    ODOO_DB_REPLICA_HOST="False" \
+    ODOO_DB_PORT="False" \
+    ODOO_DB_REPLICA_PORT="False" \
+    ODOO_DB_SSLMODE="prefer" \
+    ODOO_DB_MAXCONN="64" \
+    ODOO_DB_MAXCONN_GEVENT="False" \
+    ODOO_DB_TEMPLATE="template0" \
     ODOO_LOAD_LANGUAGE="" \
     ODOO_LANGUAGE="" \
     ODOO_TRANSLATE_OUT="" \
     ODOO_TRANSLATE_IN="" \
-    ODOO_OVERWRITE_EXISTING_TRANSLATIONS="" \
+    ODOO_OVERWRITE_EXISTING_TRANSLATIONS="False" \
     ODOO_TRANSLATE_MODULES="" \
-    ODOO_LIST_DB="" \
+    ODOO_LIST_DB="True" \
     ODOO_DEV_MODE="" \
     ODOO_SHELL_INTERFACE="" \
-    ODOO_STOP_AFTER_INIT="" \
-    ODOO_OSV_MEMORY_COUNT_LIMIT="" \
-    ODOO_TRANSIENT_AGE_LIMIT="" \
-    ODOO_MAX_CRON_THREADS="" \
+    ODOO_STOP_AFTER_INIT="False" \
+    ODOO_OSV_MEMORY_COUNT_LIMIT="0" \
+    ODOO_TRANSIENT_AGE_LIMIT="1.0" \
+    ODOO_MAX_CRON_THREADS="2" \
     ODOO_LIMIT_TIME_WORKER_CRON="0" \
-    ODOO_UNACCENT="" \
-    ODOO_GEOIP_CITY_DB="" \
-    ODOO_GEOIP_COUNTRY_DB="" \
-    ODOO_WORKERS="" \
-    ODOO_LIMIT_MEMORY_SOFT="" \
-    ODOO_LIMIT_MEMORY_SOFT_GEVENT="" \
-    ODOO_LIMIT_MEMORY_HARD="" \
-    ODOO_LIMIT_MEMORY_HARD_GEVENT="" \
-    ODOO_LIMIT_TIME_CPU="" \
-    ODOO_LIMIT_TIME_REAL="" \
-    ODOO_LIMIT_TIME_REAL_CRON="" \
-    ODOO_LIMIT_REQUEST=""
+    ODOO_UNACCENT="False" \
+    ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
+    ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
+    ODOO_WORKERS="0" \
+    ODOO_LIMIT_MEMORY_SOFT="2147483648" \
+    ODOO_LIMIT_MEMORY_SOFT_GEVENT="False" \
+    ODOO_LIMIT_MEMORY_HARD="2684354560" \
+    ODOO_LIMIT_MEMORY_HARD_GEVENT="False" \
+    ODOO_LIMIT_TIME_CPU="60" \
+    ODOO_LIMIT_TIME_REAL="120" \
+    ODOO_LIMIT_TIME_REAL_CRON="-1" \
+    ODOO_LIMIT_REQUEST="65536"
+
 
 ## Copy entrypoint + config
 COPY entrypoint.sh /
 COPY odoo.conf /volumes/config/odoo.conf
 
-# Create the related files and folders for Odoo
-RUN mkdir odoo:odoo /etc/odoo && \
-    touch /etc/odoo/odoo_generated.conf && \
-    chmod +x /entrypoint.sh && \
-    chown odoo:odoo /volumes/config /etc/odoo/odoo_generated.conf && \
-    mkdir -p /volumes/addons && \
-    chown -R odoo /volumes/addons && \
-    mkdir /volumes/data && \
-    chown -R odoo /volumes/data
-
 # Create volumes
 VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
+
+RUN chown odoo:odoo /volumes/config
+
+# Create the related files and folders for Odoo
+#RUN mkdir odoo:odoo /etc/odoo && \
+#    touch /etc/odoo/odoo_generated.conf && \
+#    chmod +x /entrypoint.sh && \
+#    chown odoo:odoo /volumes/config /etc/odoo/odoo_generated.conf && \
+#    mkdir -p /volumes/addons && \
+#    chown -R odoo /volumes/addons && \
+#    mkdir /volumes/data && \
+#    chown -R odoo /volumes/data
+
+
+
+
 
 # Expose Odoo services
 EXPOSE 8069 8071 8072
