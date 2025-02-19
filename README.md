@@ -28,8 +28,6 @@ Supported versions
 | [17.0](https://github.com/adomi-io/odoo/tree/17.0) | ```docker pull ghcr.io/adomi-io/odoo:17.0``` |
 | [16.0](https://github.com/adomi-io/odoo/tree/16.0) | ```docker pull ghcr.io/adomi-io/odoo:16.0``` |
 
----
-
 Getting started
 ---
 
@@ -38,6 +36,10 @@ Pull the latest nightly build for your version of Odoo (e.g., 18.0):
 ```bash
 docker pull ghcr.io/adomi-io/odoo:18.0
 ```
+
+
+---
+
 
 Run this container
 ---
