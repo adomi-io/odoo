@@ -1,31 +1,34 @@
 # Adomi-io - Odoo
 
-Configuration is streamlined through environment variables, making it 
+Configuration is streamlined through environment variables, making it
 simple to customize your setup without modifying the base image.
 
-Designed with multi-tenancy and cloud deployments in mind, this Docker container is ideal 
-for running on platforms such as AWS ECS, Kubernetes, and more, or for building custom software 
-solutions on top of Odoo. 
+Designed with multi-tenancy and cloud deployments in mind, this Docker container is ideal
+for running on platforms such as AWS ECS, Kubernetes, and more, or for building custom software
+solutions on top of Odoo.
 
-This repository mirrors the latest code from the official Odoo GitHub repository and is built nightly, 
+This repository mirrors the latest code from the official Odoo GitHub repository and is built nightly,
 ensuring you always run the most up-to-date version for your specific Odoo release.
 
 Features
 ---
 
-- 🔧 **Flexible Configuration:** Customize your Odoo instance instantly with environment variables and secret files—no rebuilds needed. Scale effortlessly.  
-- 🚀 **Cloud Native:** Designed for high-scale deployments on AWS ECS, Kubernetes, Lightsail, and Digital Ocean. Deploy anywhere with ease.  
-- 🏗️ **Multi-Tenant Ready:** Optimized for SaaS and shared environments, supporting multiple tenants effortlessly.  
-- 🤝 **Community Driven:** Built and maintained by the community, ensuring continuous improvements and real-world usability.  
-
+- 🔧 **Flexible Configuration:** Customize your Odoo instance instantly with environment variables and secret files—no
+  rebuilds needed. Scale effortlessly.
+- 🚀 **Cloud Native:** Designed for high-scale deployments on AWS ECS, Kubernetes, Lightsail, and Digital Ocean. Deploy
+  anywhere with ease.
+- 🏗️ **Multi-Tenant Ready:** Optimized for SaaS and shared environments, supporting multiple tenants effortlessly.
+- 🤝 **Community Driven:** Built and maintained by the community, ensuring continuous improvements and real-world
+  usability.
 
 Supported Versions
 ---
-| Version                                                   | Pull Command                                 |
-|-----------------------------------------------------------|----------------------------------------------|
-| [18.0](https://github.com/adomi-io/odoo/tree/18.0)        | ```docker pull ghcr.io/adomi-io/odoo:18.0``` |
-| [17.0](https://github.com/adomi-io/odoo/tree/17.0)        | ```docker pull ghcr.io/adomi-io/odoo:17.0```       |
-| [16.0](https://github.com/adomi-io/odoo/tree/16.0)        | ```docker pull ghcr.io/adomi-io/odoo:16.0```       |
+
+| Version                                            | Pull Command                                 |
+|----------------------------------------------------|----------------------------------------------|
+| [18.0](https://github.com/adomi-io/odoo/tree/18.0) | ```docker pull ghcr.io/adomi-io/odoo:18.0``` |
+| [17.0](https://github.com/adomi-io/odoo/tree/17.0) | ```docker pull ghcr.io/adomi-io/odoo:17.0``` |
+| [16.0](https://github.com/adomi-io/odoo/tree/16.0) | ```docker pull ghcr.io/adomi-io/odoo:16.0``` |
 
 Getting Started
 ---
@@ -36,9 +39,10 @@ Pull the latest nightly build for your version of Odoo (e.g., 18.0):
 docker pull ghcr.io/adomi-io/odoo:18.0
 ```
 
-
 ### Run the container
+
 #### Start a Postgres database
+
 ```bash
 docker run -d \
   --name odoo_db \
@@ -59,7 +63,7 @@ docker run --name odoo \
   ghcr.io/adomi-io/odoo:18.0
 ```
 
-Docker Compose 
+Docker Compose
 ---
 This Docker Compose file will launch a copy of Odoo along with a Postgres database.
 
@@ -144,7 +148,7 @@ volumes:
 
 ## Mount a configuration file
 
-By default, this image generates an Odoo configuration dynamically using environment variables. 
+By default, this image generates an Odoo configuration dynamically using environment variables.
 However, you can mount a custom `odoo.conf` file to override settings directly.
 
 ### Step 1: Create or Update `odoo.conf`
@@ -164,7 +168,8 @@ workers = 2
 ### Step 2: Mount the Configuration File
 
 #### Docker Compose
-To use your custom configuration file, update your docker-compose.yml 
+
+To use your custom configuration file, update your docker-compose.yml
 to mount it to `/volumes/config/odoo.conf`:
 
 ```yaml
@@ -178,6 +183,7 @@ services:
 ```
 
 #### Docker
+
 Add the `-v $(pwd)/odoo.conf:/volumes/config/odoo.conf` flag to your `docker run` command. Eg:
 
 ```
@@ -188,97 +194,84 @@ docker run -d \
   ghcr.io/adomi-io/odoo:18.0
 ```
 
-# Configure your Odoo instance
+# Configure your Odoo instances
 
 Default Odoo Configuration File
 ---
-This image includes a default Odoo configuration, which you can override, modify, or hardcode as needed.  
+This image includes a default Odoo configuration, which you can override, modify, or hardcode as needed.
 
-The configuration file is located at `/volumes/config`.
+The configuration file is located at `/volumes/config/odoo.conf`.
 
-Some configuration options, when set, alter Odoo’s default behavior. To maintain flexibility, many supported options are included but commented out by default.  
+Some configuration options, when set, alter Odoo’s default behavior. To maintain flexibility, many supported options are
+included but are commented out by default.
 
-For details on extending this image, see the [Base Container](#) section.
+For details on extending this image, see the [Extending this image](#extending-this-image) section.
 
 ```.conf
 [options]
-addons_path = $ADDONS_PATH
-data_dir = $DATA_DIR
-db_host = $DB_HOST
-db_port = $DB_PORT
-db_user = $DB_USER
-db_password = $DB_PASSWORD
+# Database related options
 
-;db_name = $DB_NAME
-;admin_passwd = $ADMIN_PASSWD
-;csv_internal_sep = $CSV_INTERNAL_SEP
-;db_maxconn = $DB_MAXCONN
-;db_template = $DB_TEMPLATE
-;dbfilter = $DBFILTER
-;debug_mode = $DEBUG_MODE
-;email_from = $EMAIL_FROM
-;limit_memory_hard = $LIMIT_MEMORY_HARD
-;limit_memory_soft = $LIMIT_MEMORY_SOFT
-;limit_request = $LIMIT_REQUEST
-;limit_time_cpu = $LIMIT_TIME_CPU
-;limit_time_real = $LIMIT_TIME_REAL
-;list_db = $LIST_DB
-;log_db = $LOG_DB
-;log_handler = $LOG_HANDLER
-;log_level = $LOG_LEVEL
-;logfile = $LOGFILE
-;longpolling_port = $LONGPOLLING_PORT
-;max_cron_threads = $MAX_CRON_THREADS
-;transient_age_limit = $TRANSIENT_AGE_LIMIT
-;osv_memory_count_limit = $OSV_MEMORY_COUNT_LIMIT
-;smtp_password = $SMTP_PASSWORD
-;smtp_port = $SMTP_PORT
-;smtp_server = $SMTP_SERVER
-;smtp_ssl = $SMTP_SSL
-;smtp_user = $SMTP_USER
-;workers = $WORKERS
-;xmlrpc = $XMLRPC
-;xmlrpc_interface = $XMLRPC_INTERFACE
-;xmlrpc_port = $XMLRPC_PORT
-;xmlrpcs = $XMLRPCS
-;xmlrpcs_interface = $XMLRPCS_INTERFACE
-;xmlrpcs_port = $XMLRPCS_PORT
+# specify the database user name (default: False)
+db_user = $ODOO_DB_USER
+
+# specify the database password (default: False)
+db_password = $ODOO_DB_PASSWORD
+
+# specify the database host (default: False)
+db_host = $ODOO_DB_HOST
+
+# specify the database name (default: False)
+db_name = $ODOO_DB_NAME
+
+# specify the database port (default: False)
+db_port = $ODOO_DB_PORT
+
+# Common options
+
+# specify alternate config file (default: None)
+config = $ODOO_CONFIG
+
+# Comma-separated list of server-wide modules. (default: base,web)
+server_wide_modules = $ODOO_SERVER_WIDE_MODULES
+
+# Directory where to store Odoo data (default: /var/lib/odoo)
+data_dir = $ODOO_DATA_DIR
+
+# specify additional addons paths (separated by commas). (default: None)
+addons_path = $ODOO_ADDONS_PATH
+
+# disable loading demo data for modules to be installed (comma-separated, use "all" for all modules). Requires -d and -i. Default is %default (default: False)
+without_demo = $ODOO_WITHOUT_DEMO
 ```
 
+# Extending this image
 
-
-Default Variables
---- 
-These variables let you fine-tune your Odoo configuration. 
-
+Setting default variables
 ---
+If you would like pull a `config` item from your environment variables, but use
+a default across all your images, you can override the
 
-## Adding New Environment Variables
+Adding New Environment Variables
+---
 
 To add a new configuration variable:
 
-1. **Set the Variable:** Add it to your environment (e.g., in your Docker Compose file, ECS task definition, or Kubernetes manifest).
-2. **Update the Configuration:** Insert a placeholder for it in `odoo.conf`. For instance, if you add `MY_CUSTOM_VAR`, include:
+1. **Set the Variable:** Add it to your environment (e.g., in your Docker Compose file, ECS task definition, or
+   Kubernetes manifest).
+2. **Update the Configuration:** Insert a placeholder for it in `odoo.conf`. For instance, if you add `MY_CUSTOM_VAR`,
+   include:
    ```ini
    my_custom_setting = $MY_CUSTOM_VAR
    ```
 3. **Deploy:** On container startup, the placeholder is replaced with the value from your environment.
 
-
-# Extending this image
-
-Setting Build-Time Defaults
----
-If you would like pull a `config` item from your environment variables, but use
-a default across all your images, you can override the 
-
-
-
 Environment variable defaults
 ---
 
-The Dockerfile is built with default environment variables. Double check the
-[Dockerfile](./src/Dockerfile) for more information
+The Dockerfile is built with default environment variables. If you do not override
+the environment variables when deploying your Odoo container,
+
+Double check the [Dockerfile](./src/Dockerfile) for more information
 
 ```dockerfile
 
@@ -363,11 +356,18 @@ ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
     ODOO_LIMIT_REQUEST="65536"
 ```
 
+# Testing
 
-# Testing 
-
-Running Unit Tests
+Testing this container
 ---
+When creating changes for this container, or when updating to a new version,
+this container is unit tested. The testing script is located in [tests.sh](./test.sh)
+
+This will create a Postgres database, install all the selected Odoo addons,
+and run their corresponding unit tests.
+
+`git@github.com:adomi-io/odoo.git`
+
 You can run unit tests with the docker compose file. This will spin up a Postgres
 database, install the addons of your choice, and run their corresponding unit tests.
 
@@ -375,13 +375,11 @@ For example:
 
 ```yml
 docker compose run --rm odoo -- \
-  -d "${TESTS_DATABASE}" \
-  --update="${TESTS_ADDONS}" \
-  --stop-after-init \
-  --test-enable
+-d "${TESTS_DATABASE}" \
+--update="${TESTS_ADDONS}" \
+--stop-after-init \
+--test-enable
 ```
-
-
 
 License
 ---
