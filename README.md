@@ -356,30 +356,55 @@ ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
     ODOO_LIMIT_REQUEST="65536"
 ```
 
-# Testing
+# Testing your code
 
-Testing this container
+Unit Testing with Environment Variables
 ---
-When creating changes for this container, or when updating to a new version,
-this container is unit tested. The testing script is located in [tests.sh](./test.sh)
+
+This docker container supports the testing flags as environment variables.
+
+You can build a custom Dockerimage dedicated to testing your code by extending this image
+
+
+
+# Maintaining this repository
+
+Odoo unit tests
+---
+The testing script is located in [./tests/unit-tests.sh](./tests/unit-tests.sh)
 
 This will create a Postgres database, install all the selected Odoo addons,
 and run their corresponding unit tests.
 
+To run these tests, clone the repository:
+
 `git@github.com:adomi-io/odoo.git`
+
+`cd` into the cloned repository
+
+`cd odoo`
+
+From the root folder, run the unit test script
+
+`./tests/unit-tests.sh`
+
+
+Unit testing with Docker Compose
+---
 
 You can run unit tests with the docker compose file. This will spin up a Postgres
 database, install the addons of your choice, and run their corresponding unit tests.
 
-For example:
+For example, this will use a database named testing, install base and web, and run their unit tests:
 
 ```yml
 docker compose run --rm odoo -- \
--d "${TESTS_DATABASE}" \
---update="${TESTS_ADDONS}" \
---stop-after-init \
---test-enable
+    -d testing \
+    --update=base,web \
+    --stop-after-init \
+    --test-enable
 ```
+
 
 License
 ---
