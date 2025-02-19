@@ -170,7 +170,7 @@ included but are commented out by default.
 
 For details on extending this image, see the [Extending this image](#extending-this-image) section.
 
-```.conf
+```ini
 [options]
 # Database related options
 
