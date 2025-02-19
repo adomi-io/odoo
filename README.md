@@ -73,8 +73,6 @@ services:
     image: ghcr.io/adomi-io/odoo:18.0
     ports:
       - "8069:8069"
-      - "8071:8071"
-      - "8072:8072"
     environment:
       ODOO_DB_HOST: ${ODOO_DB_HOST:-db}
       ODOO_DB_PORT: ${ODOO_DB_PORT:-5432}
