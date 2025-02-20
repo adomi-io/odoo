@@ -284,7 +284,6 @@ export ODOO_LIMIT_TIME_REAL_CRON="${ODOO_LIMIT_TIME_REAL_CRON:--1}"
 # limit_request (default 65536)
 export ODOO_LIMIT_REQUEST="${ODOO_LIMIT_REQUEST:-65536}"
 
-
 # Set the password file environment variable
 if [ -v PASSWORD_FILE ]; then
     DB_PASSWORD="$(< $PASSWORD_FILE)"

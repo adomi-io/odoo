@@ -3,7 +3,8 @@ ARG NODE_VERSION=22
 ARG WKHTMLTOPDF_VERSION=3.21.2-0.12.6
 
 FROM surnet/alpine-wkhtmltopdf:${WKHTMLTOPDF_VERSION}-full AS wkhtmltopdf
-FROM node:${NODE_VERSION}-alpine AS node
+
+# Download the source from git
 FROM alpine/git AS source
 
 ENV ODOO_VERSION=18.0
@@ -18,10 +19,45 @@ RUN git clone  \
     --depth 1  \
     ${ODOO_REPOSITORY} .
 
-# Build the venv
-FROM python:${PYTHON_VERSION}-alpine
+
+# Build the Python venv
+FROM python:${PYTHON_VERSION}-alpine as venv
 
 ARG TARGETARCH
+
+RUN apk add --no-cache \
+    build-base \
+    libffi-dev \
+    openssl-dev \
+    libxml2-dev \
+    postgresql-dev \
+    libxslt-dev \
+    openldap-dev \
+    cairo-dev \
+    pango-dev
+
+RUN python -m venv /venv
+ENV PATH="/venv/bin:$PATH"
+
+# Upgrade pip
+RUN pip install --no-cache-dir --upgrade pip
+
+# Install front end dependencies
+COPY --from=source /odoo/requirements.txt .
+
+# Extra requirements and version pins per Odoo's runbot:
+# https://runbot.odoo.com/runbot/dockerfile/tag/odoo:Docker18
+RUN pip install --no-cache-dir ebaysdk==2.1.5 pdf417gen==0.7.1
+
+# Install Odoo's requirements and the Odoo package
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Build front-end dependencies
+FROM node:${NODE_VERSION}-alpine AS node
+
+RUN npm install -g less less-plugin-clean-css rtlcss
+
 
 # Run the code
 FROM python:${PYTHON_VERSION}-alpine
@@ -41,9 +77,6 @@ LABEL source="odoo" \
 # Setup environment
 ENV LANG=en_US.UTF-8
 
-# Upgrade pip
-RUN pip install --no-cache-dir --upgrade pip
-
 # Add an 'odoo' user in Alpine
 RUN addgroup -g 1000 odoo && \
     adduser -D -u 1000 -G odoo odoo
@@ -61,42 +94,28 @@ RUN apk add --update --no-cache \
     libxfixes \
     postgresql-client \
     font-noto-cjk \
-    build-base \
-    libffi-dev \
-    openssl-dev \
-    libxml2-dev \
-    postgresql-dev \
-    libxslt-dev \
-    openldap-dev \
     envsubst \
     cairo \
     pango
 
 # wkhtmltopdf copy bins from ext image
-COPY --from=wkhtmltopdf /bin/wkhtmltopdf /bin
+COPY --chown=odoo:odoo --from=wkhtmltopdf /bin/wkhtmltopdf /bin
+
+# Copy the python venv with everything ready for Odoo
+COPY --chown=odoo:odoo --from=venv /venv /venv
+
+# Set the venv in the path, allowing applications to execute the odoo command
+ENV PATH="/venv/bin:$PATH"
 
 # copy node files from ext image
-COPY --from=node /usr/lib /usr/lib
-COPY --from=node /usr/local/lib /usr/local/lib
-COPY --from=node /usr/local/include /usr/local/include
-COPY --from=node /usr/local/bin /usr/local/bin
+COPY --chown=odoo:odoo --from=node /usr/lib /usr/lib
+COPY --chown=odoo:odoo --from=node /usr/local/lib /usr/local/lib
+COPY --chown=odoo:odoo --from=node /usr/local/include /usr/local/include
+COPY --chown=odoo:odoo --from=node /usr/local/bin /usr/local/bin
 
-# Install front end dependencies
-RUN npm install -g less less-plugin-clean-css rtlcss
-COPY --from=source /odoo/requirements.txt /odoo/requirements.txt
-
-# Install Odoo's requirements and the Odoo package
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
-
-
-# Copy the Odoo install
-COPY --from=source /odoo .
-RUN pip install --no-cache-dir .
-
-# Set the location of the generated Odoo conf
-ENV ODOO_RC=/volumes/config/_generated.conf
-ENV ODOO_CONFIG=/volumes/config/odoo.conf
+# Set the location of the input and output file for our config
+ENV ODOO_CONFIG=/volumes/config/odoo.conf \
+    ODOO_RC=/volumes/config/_generated.conf
 
 # Supported Odoo config options.
 # Fill these out to enable build-time defaults
@@ -178,13 +197,24 @@ ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
     ODOO_LIMIT_TIME_REAL_CRON="-1" \
     ODOO_LIMIT_REQUEST="65536"
 
-RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
+# Create the data locations used by default, and create a default empty configuration file at _generated.conf
+RUN mkdir odoo:odoo -p /volumes/config /volumes/data /volumes/addons \
     && echo "[options]" > /volumes/config/_generated.conf
 
+# Set ownership of all related volumes to odoo:odoo
 RUN chown -R odoo:odoo /volumes
 
-# Create volumes
+# Expose the volumes to allow users to mount these folders directly
 VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
+
+# Copy the Odoo install
+COPY --from=source /odoo .
+
+# Install Odoo into the venv
+#RUN pip install --no-cache-dir . \
+#    && ln -s /odoo/addons /venv/lib/python3.12/site-packages/addons
+RUN pip install --no-cache-dir .
+
 
 # Switch to Odoo user
 USER odoo
@@ -193,29 +223,11 @@ USER odoo
 COPY entrypoint.sh /
 COPY odoo.conf /volumes/config/odoo.conf
 
-
-
-
-# Create the related files and folders for Odoo
-#RUN mkdir odoo:odoo /etc/odoo && \
-#    touch /etc/odoo/odoo_generated.conf && \
-#    chmod +x /entrypoint.sh && \
-#    chown odoo:odoo /volumes/config /etc/odoo/odoo_generated.conf && \
-#    mkdir -p /volumes/addons && \
-#    chown -R odoo /volumes/addons && \
-#    mkdir /volumes/data && \
-#    chown -R odoo /volumes/data
-
-
-
-
-
 # Expose Odoo services
 EXPOSE 8069 8071 8072
 
 # Copy the wait-for-psql script
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
-
 
 # Get things started
 ENTRYPOINT ["/entrypoint.sh"]

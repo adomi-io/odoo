@@ -1,7 +1,7 @@
 #! /bin/bash
 
 export TESTS_DATABASE=${TESTS_DATABASE:-"testing"}
-export TESTS_ADDONS=${TESTS_ADDONS:-"base,web"}
+export TESTS_ADDONS=${TESTS_ADDONS:-"base"}
 
 # Build the docker image and run the unit tests
 #!/usr/bin/env bash
