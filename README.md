@@ -249,27 +249,48 @@ configuration used by Odoo
 
 # Extending this image
 
-Setting default variables
----
-If you would like pull a `config` item from your environment variables, but use
-a default across all your images, you can override the
+This image is based on Alpine Linux. This is a light-weight distribution of Linux that removes a lot of extra bloat.
 
-Adding New Environment Variables
----
+Extending this image will allow you to create your own image, set default environment variables, and bake
+your own config in as a default.
 
-To add a new configuration variable:
+Create a new Dockerfile in your project
 
-1. **Set the Variable:** Add it to your environment (e.g., in your Docker Compose file, ECS task definition, or
-   Kubernetes manifest).
-2. **Update the Configuration:** Insert a placeholder for it in `odoo.conf`. For instance, if you add `MY_CUSTOM_VAR`,
-   include:
-   ```ini
-   my_custom_setting = $MY_CUSTOM_VAR
-   ```
-3. **Deploy:** On container startup, the placeholder is replaced with the value from your environment.
+```dockerfile
+FROM ghcr.io/adomi-io/odoo:18.0
 
-Environment variable defaults
----
+# Copy your config file into the container
+COPY odoo.conf /volumes/config/odoo.conf
+
+# Copy your code into the addons folder
+COPY . /volumes/addons
+```
+
+# Setting default variables
+
+You can set the default value for the environment variable at build-time.
+
+Copy the [odoo.conf](./src/odoo.conf). Uncomment or set the configuration options you'd like to support.
+
+Setting the default with `ENV` will set that value if no environment value is passed into the container.
+
+This lets you set a default, and override it from the environment variables or your cloud providers UI at run-time.
+
+```dockerfile
+FROM ghcr.io/adomi-io/odoo:18.0
+
+# Copy your config into the image
+COPY odoo.conf /volumes/config/odoo.conf
+
+# Set the default value for subsequent images. 
+ENV ODOO_WORKERS=5
+
+# Copy your code into the addons folder
+COPY . /volumes/addons
+```
+
+## Environment variable defaults
+
 
 The Dockerfile is built with default environment variables. If you do not override
 the environment variables when deploying your Odoo container,
@@ -358,6 +379,20 @@ ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
     ODOO_LIMIT_TIME_REAL_CRON="-1" \
     ODOO_LIMIT_REQUEST="65536"
 ```
+
+Adding New Environment Variables
+---
+
+To add a new configuration variable:
+
+1. **Set the Variable:** Add it to your environment (e.g., in your Docker Compose file, ECS task definition, or
+   Kubernetes manifest).
+2. **Update the Configuration:** Insert a placeholder for it in `odoo.conf`. For instance, if you add `MY_CUSTOM_VAR`,
+   include:
+   ```ini
+   my_custom_setting = $MY_CUSTOM_VAR
+   ```
+3. **Deploy:** On container startup, the placeholder is replaced with the value from your environment.
 
 # Testing your code
 
