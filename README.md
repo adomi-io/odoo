@@ -111,7 +111,7 @@ volumes:
 # Configure your Odoo instances
 
 This Docker container uses `envsubst` to generate an `odoo.conf` file based on  environment variables. What this means is you can configure your Odoo configuration at all stages of the image's lifecycle. 
-You can hard-code values into your docker container, or set them at run-time via a mounted file or as environment variables. 
+You can hard-code values into your docker container, or set them at run-time via a mounted file, or defer those values to environment variables. 
 This documentation will take you through configuring your Odoo instances
 
 ## Basic Example
@@ -127,13 +127,13 @@ If you're using the provided `odoo.conf`, simply un-comment the configuration it
 For example:
 ```ini
 [options]
-# If you m
+# Hard-code a value by entering the config name
 db_host = my-hardcoded-database.abc-corp.com
-db_port = $DB_PORT
-db_user = $DB_USER
-db_password = odoo
-admin_passwd = my_secure_admin_password
 workers = 2
+
+# Defer to the environment variable by using the name of the config prefixed with ODOO_
+db_port = $ODOO_DB_PORT
+db_user = $ODOO_DB_USER
 ```
 
 #### Step 2: Mount the Configuration File
