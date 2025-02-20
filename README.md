@@ -125,9 +125,9 @@ This documentation will take you through configuring your Odoo instances
 
 ## Basic Example
 
-### Mount a configuration file into the container
+How to mount a configuration file into the container
 
-#### Step 1: Create an `odoo.conf` file
+### Step 1: Create an `odoo.conf` file
 
 Create a file in your projects folder called `odoo.conf`. We recommend copying the [default odoo.conf file provided with this image](./src/odoo.conf).
 
@@ -148,9 +148,9 @@ addons_path = $ODOO_ADDONS_PATH
 data_dir = $ODOO_DATA_DIR
 ```
 
-#### Step 2: Mount the Configuration File
+### Step 2: Mount the Configuration File
 
-##### Docker
+#### Docker
 
 Add the `-v $(pwd)/odoo.conf:/volumes/config/odoo.conf` flag to your `docker run` command. Eg:
 
@@ -162,7 +162,7 @@ docker run -d \
   ghcr.io/adomi-io/odoo:18.0
 ```
 
-##### Docker Compose
+#### Docker Compose
 
 To use your custom configuration file, update your docker-compose.yml
 to mount it to `/volumes/config/odoo.conf`:
