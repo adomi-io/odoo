@@ -116,7 +116,7 @@ volumes:
 
 ## Mounting Enterprise
 
-## Configure your Odoo instances
+# Configure your Odoo instances
 
 This Docker container uses `envsubst` to generate an `odoo.conf` file based on  environment variables. What this means is you can configure your Odoo configuration at all stages of the image's lifecycle. 
 You can build values into your own docker container, set them at run-time via a mounted file, or defer those values to environment variables which you configure in your cloud providers UI.
