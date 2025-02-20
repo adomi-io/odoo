@@ -108,19 +108,28 @@ volumes:
   pg_data:
 ```
 
-# Configure your Odoo instances
+# Mounting Addons
+
+## Mounting your addons
+
+## Mounting OCA addons
+
+## Mounting Enterprise
+
+## Configure your Odoo instances
 
 This Docker container uses `envsubst` to generate an `odoo.conf` file based on  environment variables. What this means is you can configure your Odoo configuration at all stages of the image's lifecycle. 
-You can hard-code values into your docker container, or set them at run-time via a mounted file, or defer those values to environment variables. 
+You can build values into your own docker container, set them at run-time via a mounted file, or defer those values to environment variables which you configure in your cloud providers UI.
+
 This documentation will take you through configuring your Odoo instances
 
 ## Basic Example
 
 ### Mount a configuration file into the container
 
-#### Step 1: Create or Update `odoo.conf`
+#### Step 1: Create an `odoo.conf` file
 
-Create a file in your projects folder called `odoo.conf`. We recommend copying the [default odoo.conf](./src/odoo.conf).
+Create a file in your projects folder called `odoo.conf`. We recommend copying the [default odoo.conf file provided with this image](./src/odoo.conf).
 
 Modify it with the values you want to use. 
 
@@ -134,6 +143,9 @@ workers = 2
 # Defer to the environment variable by using the name of the config prefixed with ODOO_
 db_port = $ODOO_DB_PORT
 db_user = $ODOO_DB_USER
+db_password = $ODOO_DB_PASSWORD
+addons_path = $ODOO_ADDONS_PATH
+data_dir = $ODOO_DATA_DIR
 ```
 
 #### Step 2: Mount the Configuration File
@@ -165,6 +177,9 @@ services:
       - ./odoo.conf:/volumes/config/odoo.conf # Add this to your docker compose configuration
 ```
 
+### Debugging the generated config
+
+# todo
 
 ## Default Odoo Configuration File
 This image includes a default Odoo configuration, which you can override, modify, or hardcode as needed.
@@ -176,6 +191,8 @@ included but are commented out by default.
 
 For details on extending this image, see the [Extending this image](#extending-this-image) section.
 
+
+These options are enabled by default, and can be set via environment variables:
 ```ini
 [options]
 # Database related options
@@ -196,9 +213,6 @@ db_name = $ODOO_DB_NAME
 db_port = $ODOO_DB_PORT
 
 # Common options
-
-# specify alternate config file (default: None)
-config = $ODOO_CONFIG
 
 # Comma-separated list of server-wide modules. (default: base,web)
 server_wide_modules = $ODOO_SERVER_WIDE_MODULES
@@ -327,19 +341,26 @@ ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
 
 # Testing your code
 
-Unit Testing with Environment Variables
----
+## Unit Testing with Environment Variables
 
 This docker container supports the testing flags as environment variables.
 
 You can build a custom Dockerimage dedicated to testing your code by extending this image
 
 
-
 # Maintaining this repository
 
-Odoo unit tests
----
+## Adding a new version of Odoo
+When Odoo launches a new version, they publish the changes on its own branch. 
+This repository works by mirroring the Odoo's branch. 
+
+When a new version of Odoo releases, create a branch in this repository with the same name.
+
+Add the branch name to the [.github/workflows/docker-publish.yml](./.github/workflows/docker-publish.yml) 
+file under `push` and `pull_request` branches.
+
+## Repository unit tests
+
 The testing script is located in [./tests/unit-tests.sh](./tests/unit-tests.sh)
 
 This will create a Postgres database, install all the selected Odoo addons,
@@ -358,8 +379,7 @@ From the root folder, run the unit test script
 `./tests/unit-tests.sh`
 
 
-Unit testing with Docker Compose
----
+## Custom Tests
 
 You can run unit tests with the docker compose file. This will spin up a Postgres
 database, install the addons of your choice, and run their corresponding unit tests.
@@ -374,9 +394,7 @@ docker compose run --rm odoo -- \
     --test-enable
 ```
 
-
-License
----
+# License
 
 For license details, see the [LICENSE](https://github.com/adomi-io/odoo/blob/master/LICENSE) file in the repository.
 
