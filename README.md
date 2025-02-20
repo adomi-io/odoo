@@ -177,7 +177,7 @@ services:
       - ./odoo.conf:/volumes/config/odoo.conf # Add this to your docker compose configuration
 ```
 
-### Debugging the generated config
+## Debugging the generated config
 
 # todo
 
