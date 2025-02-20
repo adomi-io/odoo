@@ -266,9 +266,9 @@ COPY odoo.conf /volumes/config/odoo.conf
 COPY . /volumes/addons
 ```
 
-# Setting default variables
+## Setting default variables
 
-You can set the default value for the environment variable at build-time.
+You can set the default value for the environment variables at build-time.
 
 Copy the [odoo.conf](./src/odoo.conf). Uncomment or set the configuration options you'd like to support.
 
@@ -380,8 +380,7 @@ ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
     ODOO_LIMIT_REQUEST="65536"
 ```
 
-Adding New Environment Variables
----
+## Adding New Environment Variables
 
 To add a new configuration variable:
 
