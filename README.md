@@ -413,6 +413,8 @@ When a new version of Odoo releases, create a branch in this repository with the
 Add the branch name to the [.github/workflows/docker-publish.yml](./.github/workflows/docker-publish.yml) 
 file under `push` and `pull_request` branches.
 
+The resulting image will automatically be built, unit-tested, deployed, and scheduled for update.
+
 ## Repository unit tests
 
 The testing script is located in [./tests/unit-tests.sh](./tests/unit-tests.sh)
