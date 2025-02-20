@@ -110,38 +110,25 @@ volumes:
 
 # Configure your Odoo instances
 
-This Docker container uses `envsubst` to generate an `odoo.conf` file based on  environment variables. What this means is you can configure your Odoo configuration at all stages of the image's lifecycle. You can hard-code values into your docker container,
-or set them at run-time as environment variables. This documentation will take you through configuring your Odoo instances
-
-If you just want to get started and dont care about this, you can see the default available options here:
-
-### [Skip to the default configuration file](#default-odoo-configuration-file)
-
-
-#### Overview 
-A default [odoo.conf](./src/odoo.conf) file is loaded into this image is built. When the entrypoint
-
-
-#### Note
-Odoo changes how it works based on some config values. Because of this, only a few environment variables are set in the default config file.
-
-To see an example config, please check the [odoo.conf](./src/odoo.conf) file in the `src` folder, or read more in the [Default Odoo Configuration File](#default-odoo-configuration-file)
-documentation. 
+This Docker container uses `envsubst` to generate an `odoo.conf` file based on  environment variables. What this means is you can configure your Odoo configuration at all stages of the image's lifecycle. 
+You can hard-code values into your docker container, or set them at run-time via a mounted file or as environment variables. 
+This documentation will take you through configuring your Odoo instances
 
 ## Basic Example
 
-### Mount a configuration file
-
-By default, this image generates an Odoo configuration dynamically using environment variables.
-However, you can mount a custom `odoo.conf` file to override settings directly.
+### Mount a configuration file into the container
 
 #### Step 1: Create or Update `odoo.conf`
 
-Modify or create a new `odoo.conf` file with your custom settings. For example:
+Modify or create a new `odoo.conf` file with your custom settings. We recommend copying the [odoo.conf](./src/odoo.conf), but you can build your own file.
 
+If you're using the provided `odoo.conf`, simply un-comment the configuration item you would like to be enabled.
+
+For example:
 ```ini
 [options]
-db_host = db
+# If you m
+db_host = my-hardcoded-database.abc-corp.com
 db_port = $DB_PORT
 db_user = $DB_USER
 db_password = odoo
@@ -149,9 +136,9 @@ admin_passwd = my_secure_admin_password
 workers = 2
 ```
 
-### Step 2: Mount the Configuration File
+#### Step 2: Mount the Configuration File
 
-#### Docker
+##### Docker
 
 Add the `-v $(pwd)/odoo.conf:/volumes/config/odoo.conf` flag to your `docker run` command. Eg:
 
@@ -163,7 +150,7 @@ docker run -d \
   ghcr.io/adomi-io/odoo:18.0
 ```
 
-#### Docker Compose
+##### Docker Compose
 
 To use your custom configuration file, update your docker-compose.yml
 to mount it to `/volumes/config/odoo.conf`:
