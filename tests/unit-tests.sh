@@ -16,10 +16,15 @@ if [ $BUILD_EXIT_CODE -ne 0 ]; then
 fi
 
 # 2. Run tests
-docker compose run --rm odoo -- \
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.testing.yml \
+  run \
+  --rm odoo -- \
   -d "${TESTS_DATABASE}" \
-  --update="${TESTS_ADDONS}" \
+  --init "${TESTS_ADDONS}" \
   --stop-after-init \
+  --log-level=runbot \
   --test-enable
 
 TEST_EXIT_CODE=$?

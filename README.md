@@ -434,7 +434,6 @@ From the root folder, run the unit test script
 
 `./tests/unit-tests.sh`
 
-
 ## Custom Tests
 
 You can run unit tests with the docker compose file. This will spin up a Postgres

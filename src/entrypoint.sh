@@ -37,7 +37,7 @@ export ODOO_UPGRADE_PATH="${ODOO_UPGRADE_PATH:-}"
 export ODOO_SERVER_WIDE_MODULES="${ODOO_SERVER_WIDE_MODULES:-base,web}"
 
 # data_dir (default /var/lib/odoo)
-export ODOO_DATA_DIR="${ODOO_DATA_DIR:-/var/lib/odoo}"
+export ODOO_DATA_DIR="${ODOO_DATA_DIR:-/volumes/data}"
 
 
 ####
@@ -151,28 +151,28 @@ export ODOO_SMTP_SSL_PRIVATE_KEY_FILENAME="${ODOO_SMTP_SSL_PRIVATE_KEY_FILENAME:
 ####
 
 # db_name (default False)
-export ODOO_DB_NAME="${ODOO_DB_NAME:-False}"
+export ODOO_DB_NAME="${ODOO_DB_NAME:-}"
 
 # db_user (default False)
-export ODOO_DB_USER="${ODOO_DB_USER:-False}"
+export ODOO_DB_USER="${ODOO_DB_USER:-}"
 
 # db_password (default False)
-export ODOO_DB_PASSWORD="${ODOO_DB_PASSWORD:-False}"
+export ODOO_DB_PASSWORD="${ODOO_DB_PASSWORD:-}"
 
 # pg_path (default None)
 export ODOO_PG_PATH="${ODOO_PG_PATH:-}"
 
 # db_host (default False)
-export ODOO_DB_HOST="${ODOO_DB_HOST:-False}"
+export ODOO_DB_HOST="${ODOO_DB_HOST:-}"
 
 # db_replica_host (default False)
-export ODOO_DB_REPLICA_HOST="${ODOO_DB_REPLICA_HOST:-False}"
+export ODOO_DB_REPLICA_HOST="${ODOO_DB_REPLICA_HOST:-}"
 
 # db_port (default False)
-export ODOO_DB_PORT="${ODOO_DB_PORT:-False}"
+export ODOO_DB_PORT="${ODOO_DB_PORT:-}"
 
 # db_replica_port (default False)
-export ODOO_DB_REPLICA_PORT="${ODOO_DB_REPLICA_PORT:-False}"
+export ODOO_DB_REPLICA_PORT="${ODOO_DB_REPLICA_PORT:-}"
 
 # db_sslmode (default prefer)
 export ODOO_DB_SSLMODE="${ODOO_DB_SSLMODE:-prefer}"
@@ -181,7 +181,7 @@ export ODOO_DB_SSLMODE="${ODOO_DB_SSLMODE:-prefer}"
 export ODOO_DB_MAXCONN="${ODOO_DB_MAXCONN:-64}"
 
 # db_maxconn_gevent (default False)
-export ODOO_DB_MAXCONN_GEVENT="${ODOO_DB_MAXCONN_GEVENT:-False}"
+export ODOO_DB_MAXCONN_GEVENT="${ODOO_DB_MAXCONN_GEVENT:-}"
 
 # db_template (default template0)
 export ODOO_DB_TEMPLATE="${ODOO_DB_TEMPLATE:-template0}"
@@ -264,13 +264,13 @@ export ODOO_WORKERS="${ODOO_WORKERS:-0}"
 export ODOO_LIMIT_MEMORY_SOFT="${ODOO_LIMIT_MEMORY_SOFT:-2147483648}"
 
 # limit_memory_soft_gevent (default False)
-export ODOO_LIMIT_MEMORY_SOFT_GEVENT="${ODOO_LIMIT_MEMORY_SOFT_GEVENT:-False}"
+export ODOO_LIMIT_MEMORY_SOFT_GEVENT="${ODOO_LIMIT_MEMORY_SOFT_GEVENT:-}"
 
 # limit_memory_hard (default 2684354560)
 export ODOO_LIMIT_MEMORY_HARD="${ODOO_LIMIT_MEMORY_HARD:-2684354560}"
 
 # limit_memory_hard_gevent (default False)
-export ODOO_LIMIT_MEMORY_HARD_GEVENT="${ODOO_LIMIT_MEMORY_HARD_GEVENT:-False}"
+export ODOO_LIMIT_MEMORY_HARD_GEVENT="${ODOO_LIMIT_MEMORY_HARD_GEVENT:-}"
 
 # limit_time_cpu (default 60)
 export ODOO_LIMIT_TIME_CPU="${ODOO_LIMIT_TIME_CPU:-60}"
