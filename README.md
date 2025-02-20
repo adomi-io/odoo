@@ -2,9 +2,9 @@
 
 This is an Odoo Docker container that is made for developers or infrastructure teams who are looking
 to launch Odoo into the cloud, companies who want a reliable and open build process, or startups looking
-to offer Odoo as part of a SaaS or IaaS offering.
+to offer Odoo as part of a SaaS or IaaS product.
 
-Odoo Configuration is generated through environment variables, making it
+Odoo configuration is generated through environment variables, making it
 simple to customize your setup without modifying your base image, automate deployments, 
 and scale your Odoo instances effortlessly.
 
