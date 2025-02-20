@@ -120,9 +120,9 @@ This documentation will take you through configuring your Odoo instances
 
 #### Step 1: Create or Update `odoo.conf`
 
-Modify or create a new `odoo.conf` file with your custom settings. We recommend copying the [odoo.conf](./src/odoo.conf), but you can build your own file.
+Create a file in your projects folder called `odoo.conf`. We recommend copying the [default odoo.conf](./src/odoo.conf).
 
-If you're using the provided `odoo.conf`, simply un-comment the configuration item you would like to be enabled.
+Modify it with the values you want to use. 
 
 For example:
 ```ini
