@@ -372,7 +372,7 @@ You can build a custom Dockerimage dedicated to testing your code by extending t
 
 ## Adding a new version of Odoo
 When Odoo launches a new version, they publish the changes on its own branch. 
-This repository works by mirroring the Odoo's branch. 
+This repository works by mirroring the Odoo version branch names. 
 
 When a new version of Odoo releases, create a branch in this repository with the same name.
 
