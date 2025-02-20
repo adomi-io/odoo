@@ -177,14 +177,10 @@ services:
       - ./odoo.conf:/volumes/config/odoo.conf # Add this to your docker compose configuration
 ```
 
-## Debugging the generated config
-
-# todo
-
 ## Default Odoo Configuration File
 This image includes a default Odoo configuration, which you can override, modify, or hardcode as needed.
 
-The configuration file is located at `/volumes/config/odoo.conf`.
+The configuration file is located [here](./src/odoo.conf) and is stored in the container at `/volumes/config/odoo.conf`.
 
 Some configuration options, when set, alter Odoo’s default behavior. To maintain flexibility, many supported options are
 included but are commented out by default.
@@ -226,6 +222,30 @@ addons_path = $ODOO_ADDONS_PATH
 # disable loading demo data for modules to be installed (comma-separated, use "all" for all modules). Requires -d and -i. Default is %default (default: False)
 without_demo = $ODOO_WITHOUT_DEMO
 ```
+
+## Debugging the generated config
+
+The `odoo.conf` file is ran through `envsubst` and output to `/volumes/config/_generated.conf`.
+
+If you need to see the final results, you can mount to the `/volumes/config` folder.
+
+Move your config file in your project to `./config/odoo.conf`
+
+Mount the `./config` folder this time instead, eg:
+
+```yaml
+version: '3.8'
+services:
+  odoo:
+    image: ghcr.io/adomi-io/odoo:18.0
+    # ...
+    volumes:
+      - ./config:/volumes/config # This will mount your config folder into the container
+```
+
+When the container starts, you will see a `_generated.conf` file appear in the `config` folder which contains the final
+configuration used by Odoo
+
 
 # Extending this image
 

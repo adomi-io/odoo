@@ -60,6 +60,7 @@ services:
     volumes:
       - odoo_data:/volumes/data
       - ./addons:/volumes/addons
+      - ./config:/volumes/config
     depends_on:
       - db
   db:

@@ -39,8 +39,8 @@ ENV LANG=en_US.UTF-8
 RUN pip install --no-cache-dir --upgrade pip
 
 # Add an 'odoo' user in Alpine
-RUN addgroup -g 101 odoo && \
-    adduser -D -u 101 -G odoo odoo
+RUN addgroup -g 1000 odoo && \
+    adduser -D -u 1000 -G odoo odoo
 
 # Install dependencies:
 RUN apk add --update --no-cache \
@@ -78,8 +78,8 @@ RUN npm install -g less less-plugin-clean-css rtlcss
 COPY --from=source /odoo/requirements.txt /odoo/requirements.txt
 
 # Install Odoo's requirements and the Odoo package
-RUN pip install --no-cache-dir --upgrade pip --verbose \
-    && pip install --no-cache-dir --verbose -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
 
 # Copy the Odoo install
@@ -173,15 +173,23 @@ ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
     ODOO_LIMIT_TIME_REAL_CRON="-1" \
     ODOO_LIMIT_REQUEST="65536"
 
+RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
+    && echo "[options]" > /volumes/config/_generated.conf \
+
+RUN chown -R odoo:odoo /volumes
+
+# Create volumes
+VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
+
+# Switch to Odoo user
+USER odoo
 
 ## Copy entrypoint + config
 COPY entrypoint.sh /
 COPY odoo.conf /volumes/config/odoo.conf
 
-# Create volumes
-VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
 
-RUN chown odoo:odoo /volumes/config
+
 
 # Create the related files and folders for Odoo
 #RUN mkdir odoo:odoo /etc/odoo && \
@@ -203,8 +211,6 @@ EXPOSE 8069 8071 8072
 # Copy the wait-for-psql script
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
-# Switch to Odoo user
-USER odoo
 
 # Get things started
 ENTRYPOINT ["/entrypoint.sh"]
