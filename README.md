@@ -300,7 +300,6 @@ Double check the [Dockerfile](./src/Dockerfile) for more information
 ```dockerfile
 
 ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
-    ODOO_DEFAULT_ADDONS="/odoo/addons" \
     EXTRA_ADDONS="/volumes/addons" \
     ADDONS_PATH="/odoo/addons,/volumes/addons" \
     ODOO_SAVE="False" \

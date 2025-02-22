@@ -18,7 +18,6 @@ services:
 
       ## Optional Arguments
       # DB_NAME: ${DB_NAME:-postgres}
-      # ODOO_DEFAULT_ADDONS: ${ODOO_ADDONS_LOCATION:-/odoo/addons}
       # EXTRA_ADDONS: ${EXTRA_ADDONS:-/volumes/addons}
       # ADDONS_PATH: ${ADDONS_PATH:-/odoo/addons,/volumes/addons}
       # ADMIN_PASSWD: ${ADMIN_PASSWD:-admin}

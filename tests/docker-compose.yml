@@ -14,7 +14,7 @@ services:
       ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
     volumes:
 #      - ../src/odoo.conf:/volumes/config/odoo.conf
-      - /media/kyle/Active/Code/odoo/odoo/addons:/volumes/addons
+      - /media/kyle/Active/Code/odoo/addons:/volumes/addons
     depends_on:
       - db
   db:

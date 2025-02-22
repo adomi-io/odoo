@@ -46,6 +46,23 @@ RUN if [ -z "${TARGETARCH}" ]; then \
     && curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_${WKHTMLTOPDF_VERSION}_${WKHTMLTOPDF_ARCH}.deb \
     && echo ${WKHTMLTOPDF_SHA} wkhtmltox.deb | sha1sum -c -
 
+# This will download the latest version of the
+# MaxMind GeoLite2 country, city, and ASN databases
+# which is used for IP Address geolocation
+FROM alpine as geolite
+
+ARG GEOLITE_GITHUB_REPOSITORY=P3TERX/GeoLite.mmdb
+
+# Install required packages: curl, jq, and tar (or unzip if needed)
+RUN apk add --no-cache curl jq tar
+
+# Download the latest release assets from the r epository
+RUN urls=$(curl -s https://api.github.com/repos/${GEOLITE_GITHUB_REPOSITORY}/releases/latest \
+         | jq -r '.assets[].browser_download_url') \
+ && for url in $urls; do \
+      echo "Downloading $url..."; \
+      curl -L "$url" -o "$(basename "$url")"; \
+    done
 
 #This build step will compile the Odoo source code into a .deb file
 FROM ubuntu:noble as deb
@@ -127,7 +144,6 @@ ENV npm_config_prefix=/usr
 # If you set these, these values are baked into the container.
 # This means they will be the default if no other environment variable is specified at run-time.
 ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
-    ODOO_DEFAULT_ADDONS="/odoo/addons" \
     ODOO_ADDONS_PATH="/volumes/addons" \
     ODOO_SAVE="False" \
     ODOO_INIT="" \
