@@ -1,8 +1,0 @@
-version: '3.8'
-
-services:
-  odoo:
-    volumes:
-      - ./src/odoo.conf:/volumes/config/odoo.conf
-  db:
-    volumes: []

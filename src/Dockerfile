@@ -126,9 +126,9 @@ ENV npm_config_prefix=/usr
 # Odoo-specific configuration options
 # If you set these, these values are baked into the container.
 # This means they will be the default if no other environment variable is specified at run-time.
-ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
+ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
     ODOO_DEFAULT_ADDONS="/odoo/addons" \
-    ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
+    ODOO_ADDONS_PATH="/volumes/addons" \
     ODOO_SAVE="False" \
     ODOO_INIT="" \
     ODOO_UPDATE="" \
@@ -283,7 +283,7 @@ RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
     && echo "[options]" > /volumes/config/_generated.conf
 
 # Set the owner to user:group odoo:odoo
-RUN chown -R odoo:odoo /volumes
+RUN chown -R ubuntu:ubuntu /volumes
 
 # Expose the volumes to allow users to mount these folders directly
 VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
@@ -294,8 +294,25 @@ WORKDIR /odoo
 # Copy the code from the source-fetching container and copy it into the Odoo folder
 COPY --from=source /odoo .
 
-# Switch to Odoo user
-USER odoo
+# Odoo's unit tests check to ensure that addons are located at
+# /usr/lib/python3/dist-packages/addons.
+# This is not setup automatically and must be created for unit tests to pass
+RUN mkdir -p /usr/lib/python3/dist-packages/addons
+
+# When Odoo is installed, it is installed into the odoo dist package:
+# /usr/lib/python3/dist-packages/odoo.
+# Odoo's unit tests expect there to be a dist-package installed called odoo-bin (test_upgrade_code.py)
+# We can create a sym link so the unit tests pass
+# This is a bit hacky but the same tests fail in the official container
+RUN ln -s /odoo/odoo-bin /usr/lib/python3/dist-packages/odoo-bin
+
+# Switch to Ubuntu user
+# Note: Odoo uses UID and GID 101:101 in its .deb setup step.
+# This creates problems generating files in a volume since
+# Docker shares permissions on folders with the host machine.
+# There really isnt any reason to use an Odoo user in this Docker container
+# Ubuntu is gid 1000, and should match most host machines
+USER ubuntu
 
 ## Copy entrypoint + config
 COPY entrypoint.sh /

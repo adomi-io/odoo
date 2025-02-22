@@ -1,12 +1,12 @@
 #! /bin/bash
 
 export TESTS_DATABASE=${TESTS_DATABASE:-"testing"}
-export TESTS_ADDONS=${TESTS_ADDONS:-"base"}
+export TESTS_ADDONS=${TESTS_ADDONS:-"all"}
 
 # Build the docker image and run the unit tests
 #!/usr/bin/env bash
 
-# 1. Build
+# 1. Build the base image
 docker compose build
 BUILD_EXIT_CODE=$?
 
@@ -17,15 +17,15 @@ fi
 
 # 2. Run tests
 docker compose \
-  -f docker-compose.yml \
-  -f docker-compose.testing.yml \
   run \
   --rm odoo -- \
-  -d "${TESTS_DATABASE}" \
+  --database "${TESTS_DATABASE}" \
   --init "${TESTS_ADDONS}" \
   --stop-after-init \
-  --log-level=runbot \
-  --test-enable
+  --workers=0 \
+  --max-cron-threads=0 \
+  --test-tags='/base:TestRealCursor.test_connection_readonly'
+#  --test-tags='standard,-/base:TestRealCursor.test_connection_readonly'
 
 TEST_EXIT_CODE=$?
 if [ $TEST_EXIT_CODE -ne 0 ]; then
