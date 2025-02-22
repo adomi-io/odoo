@@ -1,14 +1,10 @@
-ARG PYTHON_VERSION=3.12
-ARG NODE_VERSION=22
-ARG WKHTMLTOPDF_VERSION=3.21.2-0.12.6
-
-FROM surnet/alpine-wkhtmltopdf:${WKHTMLTOPDF_VERSION}-full AS wkhtmltopdf
-
-# Download the source from git
+# Download the source code from a branch
+# You can get the related corrisponding enterprise and design-themes versions by running
+# from odoo import release; print(release.repos_heads)
 FROM alpine/git AS source
 
-ENV ODOO_VERSION=18.0
-ENV ODOO_REPOSITORY=https://github.com/odoo/odoo.git
+ARG ODOO_VERSION=18.0
+ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
 
 WORKDIR /odoo
 
@@ -19,106 +15,117 @@ RUN git clone  \
     --depth 1  \
     ${ODOO_REPOSITORY} .
 
+# This build step will go download the latest version
+# of wkhtmltopdf (keep your eyes on https://github.com/odoo/paper-muncher)
+FROM alpine/curl as wkhtmltox
 
-# Build the Python venv
-FROM python:${PYTHON_VERSION}-alpine as venv
+# Options to fetch WKHTMLTOPDF
+ARG WKHTMLTOPDF_VERSION=0.12.6.1-3.jammy
+ARG WKHTMLTOPDF_AMD64_SHA=967390a759707337b46d1c02452e2bb6b2dc6d59
+ARG WKHTMLTOPDF_ARM64_SHA=90f6e69896d51ef77339d3f3a20f8582bdf496cc
+ARG WKHTMLTOPDF_PPC64EL_SHA=5312d7d34a25b321282929df82e3574319aed25c
 
+# Get the build-type, amd64, arm64, ppc64le | ppc64el
 ARG TARGETARCH
 
-RUN apk add --no-cache \
-    build-base \
-    libffi-dev \
-    openssl-dev \
-    libxml2-dev \
-    postgresql-dev \
-    libxslt-dev \
-    openldap-dev \
-    cairo-dev \
-    pango-dev
+# This will be the output directory for this build step
+WORKDIR /wkhtmltox
 
-RUN python -m venv /venv
-ENV PATH="/venv/bin:$PATH"
-
-# Upgrade pip
-RUN pip install --no-cache-dir --upgrade pip
-
-# Install front end dependencies
-COPY --from=source /odoo/requirements.txt .
-
-# Extra requirements and version pins per Odoo's runbot:
-# https://runbot.odoo.com/runbot/dockerfile/tag/odoo:Docker18
-RUN pip install --no-cache-dir ebaysdk==2.1.5 pdf417gen==0.7.1
-
-# Install Odoo's requirements and the Odoo package
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
-
-# Build front-end dependencies
-FROM node:${NODE_VERSION}-alpine AS node
-
-RUN npm install -g less less-plugin-clean-css rtlcss
+# This will get the target architecture and automate the download of
+# wkhtmltopdf based on the builds target architecture, and confirm
+# its validity based on its checksum
+RUN if [ -z "${TARGETARCH}" ]; then \
+        TARGETARCH="$(dpkg --print-architecture)"; \
+    fi; \
+    WKHTMLTOPDF_ARCH=${TARGETARCH} && \
+    case ${TARGETARCH} in \
+    "amd64") WKHTMLTOPDF_ARCH=amd64 && WKHTMLTOPDF_SHA=$WKHTMLTOPDF_AMD64_SHA  ;; \
+    "arm64")  WKHTMLTOPDF_SHA=$WKHTMLTOPDF_ARM64_SHA  ;; \
+    "ppc64le" | "ppc64el") WKHTMLTOPDF_ARCH=ppc64el && WKHTMLTOPDF_SHA=$WKHTMLTOPDF_PPC64EL_SHA  ;; \
+    esac \
+    && curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_${WKHTMLTOPDF_VERSION}_${WKHTMLTOPDF_ARCH}.deb \
+    && echo ${WKHTMLTOPDF_SHA} wkhtmltox.deb | sha1sum -c -
 
 
-# Run the code
-FROM python:${PYTHON_VERSION}-alpine
+#This build step will compile the Odoo source code into a .deb file
+FROM ubuntu:noble as deb
 
-WORKDIR /odoo
+# Install necessary build tools and dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        devscripts \
+        debhelper \
+        python3 \
+        python3-dev \
+        python3-pip \
+        libxml2-dev \
+        libxslt1-dev \
+        libldap2-dev \
+        libsasl2-dev \
+        libffi-dev \
+        wget \
+        dh-python \
+        python3-asn1crypto \
+        rsync \
+        ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
-ARG TARGETARCH
+# Set our initial directory to /build/src.
+# When we build our .deb, the resulting
+# build will be moved one directory higher
+WORKDIR /build/src
+
+# Copy the source code from the source-fetching image
+COPY --from=source /odoo .
+
+# Compile the Odoo .deb file
+RUN dpkg-buildpackage -us -uc
+
+# dpkg-buildpackage will produce files with some crazy names.
+# This will grab whatever .deb file was output and move it to the
+# /output directory, renaming it to odoo.deb for other build-steps to pick up
+RUN mkdir /output && \
+    mv /build/odoo*.deb /output/odoo.deb
+
+
+# This is the final output, and is the container that will run our code
+FROM ubuntu:noble
 
 # Docker labels
-LABEL source="odoo" \
+LABEL source="Odoo" \
       maintainer="Adomi Software, LLC <github@adomisoftware.com>" \
       uploaders="Adomi Software, LLC <github@adomisoftware.com>" \
       homepage="https://www.github.com/adomi-io/odoo" \
       vcs_git="https://www.github.com/adomi-io/odoo" \
       vcs_browser="https://www.github.com/adomi-io/odoo"
 
-# Setup environment
-ENV LANG=en_US.UTF-8
+# # Use /bin/bash with debugging (-x) and fail on pipeline errors (-o pipefail) for subsequent commands
+SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 
-# Add an 'odoo' user in Alpine
-RUN addgroup -g 1000 odoo && \
-    adduser -D -u 1000 -G odoo odoo
+# We will be downloading various packages through the build process.
+# In order to avoid any bloat, we will use a setup directory.
+# At the end of the build step, this directly should be empty and removed.
+WORKDIR /setup
 
-# Install dependencies:
-RUN apk add --update --no-cache \
-    bash \
-    ca-certificates \
-    curl \
-    gnupg \
-    ttf-dejavu \
-    libx11 \
-    libxrender \
-    libxext \
-    libxfixes \
-    postgresql-client \
-    font-noto-cjk \
-    envsubst \
-    cairo \
-    pango
+# Set our environment local
+ENV LANG=C.UTF-8
 
-# wkhtmltopdf copy bins from ext image
-COPY --chown=odoo:odoo --from=wkhtmltopdf /bin/wkhtmltopdf /bin
-
-# Copy the python venv with everything ready for Odoo
-COPY --chown=odoo:odoo --from=venv /venv /venv
-
-# Set the venv in the path, allowing applications to execute the odoo command
-ENV PATH="/venv/bin:$PATH"
-
-# copy node files from ext image
-COPY --chown=odoo:odoo --from=node /usr/lib /usr/lib
-COPY --chown=odoo:odoo --from=node /usr/local/lib /usr/local/lib
-COPY --chown=odoo:odoo --from=node /usr/local/include /usr/local/include
-COPY --chown=odoo:odoo --from=node /usr/local/bin /usr/local/bin
-
-# Set the location of the input and output file for our config
+# Set the location of the input and output file for our config.
+# ODOO_RC is checked by Odoo in the config.py script
 ENV ODOO_CONFIG=/volumes/config/odoo.conf \
     ODOO_RC=/volumes/config/_generated.conf
 
-# Supported Odoo config options.
-# Fill these out to enable build-time defaults
+# ENV NODE_PATH=/usr/lib/node_modules/
+ENV NODE_PATH=/usr/lib/node_modules/
+
+# This will allow user-wide installation of packages
+# This flag is used by npm and yarn
+ENV npm_config_prefix=/usr
+
+# Odoo-specific configuration options
+# If you set these, these values are baked into the container.
+# This means they will be the default if no other environment variable is specified at run-time.
 ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
     ODOO_DEFAULT_ADDONS="/odoo/addons" \
     ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
@@ -197,24 +204,95 @@ ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
     ODOO_LIMIT_TIME_REAL_CRON="-1" \
     ODOO_LIMIT_REQUEST="65536"
 
+# Install Odoo dependencies and system packages
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        curl \
+        dirmngr \
+        fonts-noto-cjk \
+        gnupg \
+        libssl-dev \
+        node-less \
+        npm \
+        libpq-dev \
+        python3-dev \
+        python3-venv \
+        libldap2-dev \
+        libsasl2-dev \
+        python3-magic \
+        python3-num2words \
+        python3-odf \
+        python3-pdfminer \
+        python3-pip \
+        python3-phonenumbers \
+        python3-pyldap \
+        python3-qrcode \
+        python3-renderpm \
+        python3-setuptools \
+        python3-slugify \
+        python3-vobject \
+        python3-watchdog \
+        python3-xlrd \
+        python3-xlwt \
+        xz-utils \
+        fontconfig \
+        xfonts-75dpi \
+        xfonts-base \
+        libjpeg-turbo8 \
+        libx11-6 \
+        libxcb1 \
+        libxext6 \
+        libxrender1 \
+        gettext && \
+        rm -rf /var/lib/apt/lists/*
+
+# Install the latest version of the Postgresql connector.
+# The Ubuntu version can occasionally fall out of date, so we add the apt repository,
+# per the postgresql docs: https://www.postgresql.org/download/linux/ubuntu/
+RUN install -d /usr/share/postgresql-common/pgdg && \
+    curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+    echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    apt-get update && \
+    apt -y install postgresql && \
+    rm -f /etc/apt/sources.list.d/pgdg.list && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the wkhtmltopdf binary that we fetched in the wkhtmltox build step
+COPY --from=wkhtmltox /wkhtmltox/wkhtmltox.deb wkhtmltox.deb
+
+# Install the wkhtmltox.deb file we just copied, and then delete it
+RUN apt-get install -y --no-install-recommends ./wkhtmltox.deb \
+    && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
+
+# Install our Javascript dependencies
+RUN npm install --force -g rtlcss@3.4.0
+
+# Copy the deb file we compiled from source to the current image
+COPY --from=deb /output .
+
+# Install the Odoo .deb file we copied, and then remove it
+RUN apt-get update &&  \
+    apt-get -y install --no-install-recommends ./odoo.deb \
+    && rm -rf /var/lib/apt/lists/* odoo.deb
+
 # Create the data locations used by default, and create a default empty configuration file at _generated.conf
-RUN mkdir odoo:odoo -p /volumes/config /volumes/data /volumes/addons \
+RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
     && echo "[options]" > /volumes/config/_generated.conf
 
-# Set ownership of all related volumes to odoo:odoo
+# Set the owner to user:group odoo:odoo
 RUN chown -R odoo:odoo /volumes
 
 # Expose the volumes to allow users to mount these folders directly
 VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
 
-# Copy the Odoo install
+# Set the current directory to the Odoo folder
+WORKDIR /odoo
+
+# Copy the code from the source-fetching container and copy it into the Odoo folder
 COPY --from=source /odoo .
-
-# Install Odoo into the venv
-#RUN pip install --no-cache-dir . \
-#    && ln -s /odoo/addons /venv/lib/python3.12/site-packages/addons
-RUN pip install --no-cache-dir .
-
 
 # Switch to Odoo user
 USER odoo
