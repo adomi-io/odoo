@@ -9,12 +9,12 @@ services:
       - "8069:8069"
     environment:
       ODOO_DB_HOST: ${DB_HOST:-db}
-      ODOO_DB_PORT: ${DB_PORT:-5439}
+      ODOO_DB_PORT: ${DB_PORT:-5432}
       ODOO_DB_USER: ${DB_USER:-odoo}
       ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
     volumes:
       - ../src/odoo.conf:/volumes/config/odoo.conf
-      - /media/kyle/Active/Code/odoo/addons:/volumes/addons
+#      - /media/kyle/Active/Code/odoo/addons:/volumes/addons
     depends_on:
       - db
   db:
@@ -24,4 +24,4 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
       POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
     ports:
-      - "5439:5432"
+      - "5432:5432"

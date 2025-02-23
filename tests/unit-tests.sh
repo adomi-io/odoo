@@ -1,73 +1,94 @@
 #!/usr/bin/env bash
 
+# Configuration options for this script
 export TESTS_DATABASE=${TESTS_DATABASE:-"testing"}
 export TESTS_ADDONS=${TESTS_ADDONS:-"all"}
+export TESTS_IMAGE_TAG=${TEST_IMAGE_TAG:-"testing-image"}
+export TESTS_DOCKERFILE=${TESTS_DOCKERFILE:-"Dockerfile"}
+export TESTS_WORKDIR=${TESTS_WORKDIR:-"../src"}
 
-# 1. Build the base image
-docker build -t testing_image -f ../src/Dockerfile ../src
+export TESTS_POSTGRES_IMAGE=${TESTS_POSTGRES_SERVER_VERSION:-"postgres:13"}
+export TESTS_ODOO_CONTAINER_NAME=${TESTS_ODOO_CONTAINER_NAME:-"odoo_testing_container"}
+export TESTS_POSTGRES_CONTAINER_NAME=${TESTS_POSTGRES_CONTAINER_NAME:-"${TESTS_ODOO_CONTAINER_NAME}_db"}
 
+export TESTS_DB_HOST=${TESTS_DB_HOST:-"${TESTS_POSTGRES_CONTAINER_NAME}"}
+export TESTS_DB_USER=${TESTS_DB_USER:-"odoo"}
+export TESTS_DB_PASSWORD=${TESTS_DB_PASSWORD:-"odoo"}
+export TESTS_DB_NAME=${TESTS_DB_NAME:-"testing"}
+export TESTS_TEST_TAGS=${TESTS_TEST_TAGS:-"-/base:TestRealCursor.test_connection_readonly"}
+
+# Ensure we do not have a lingering odoo_testing_db
+docker rm -f "${TESTS_POSTGRES_CONTAINER_NAME}" 2>/dev/null || true
+
+# Build the testing image
+docker build -t "${TESTS_IMAGE_TAG}" -f "${TESTS_WORKDIR}/${TESTS_DOCKERFILE}" "${TESTS_WORKDIR}"
+
+# Capture the last status code
 BUILD_EXIT_CODE=$?
 
+# Exit if we did not build successfully
 if [ $BUILD_EXIT_CODE -ne 0 ]; then
   echo "Build failed (exit code $BUILD_EXIT_CODE)"
   exit $BUILD_EXIT_CODE
 fi
 
-# Start the database
-docker run -d \
-  --name odoo_testing_db \
-  -e POSTGRES_USER="${POSTGRES_USER:-odoo}" \
-  -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-odoo}" \
-  -e POSTGRES_DB="${POSTGRES_DATABASE:-postgres}" \
-  postgres:13
 
-while ! docker inspect -f '{{.State.Running}}' odoo_testing_db | grep true > /dev/null; do
-  echo "Waiting for odoo_testing_db to be running..."
+# Start the database as a daemon
+docker run -d \
+  --name "${TESTS_POSTGRES_CONTAINER_NAME}" \
+  -e POSTGRES_USER="${TESTS_DB_USER}" \
+  -e POSTGRES_PASSWORD="${TESTS_DB_PASSWORD}" \
+  -e POSTGRES_DB="${TESTS_DB_NAME}" \
+  "${TESTS_POSTGRES_IMAGE}"
+
+# Wait for the postgres database to start
+while ! docker inspect -f '{{.State.Running}}' "${TESTS_POSTGRES_CONTAINER_NAME}" | grep true > /dev/null; do
+  echo "Waiting for ${TESTS_POSTGRES_CONTAINER_NAME} to be running..."
   sleep 1
 done
 
-# 2. Run tests
+# Get the first argument to the script or use default config
+CONFIG_FILE="${1:-$(pwd)/../src/odoo.conf}"
+
+echo "${CONFIG_FILE}"
+
+# Test the docker container
+
+# By default, we should ignore the /volumes/addons folder since at build time
+# we wont have anything there, and the upgrade command will fail because
+# this is not a valid addon directory as an empty folder
 docker run \
-  --name odoo_testing_container \
-  --link odoo_testing_db:odoo_testing_db \
-  -p 8069:8069 \
-  -v "$(pwd)/../src/odoo.conf":/volumes/config/odoo.conf \
-  -e ODOO_DB_HOST="${DB_HOST:-odoo_testing_db}" \
-  -e ODOO_DB_PORT="${DB_PORT:-5432}" \
+  --name "${TESTS_ODOO_CONTAINER_NAME}" \
+  --link "${TESTS_POSTGRES_CONTAINER_NAME}:${TESTS_POSTGRES_CONTAINER_NAME}" \
+  -v "${CONFIG_FILE}":/volumes/config/odoo.conf \
+  -e ODOO_DB_HOST="${TESTS_DB_HOST}" \
+  -e ODOO_DB_PORT="${TESTS_DB_PORT:-5432}" \
   -e ODOO_DB_USER="${DB_USER:-odoo}" \
   -e ODOO_DB_PASSWORD="${DB_PASSWORD:-odoo}" \
-  --rm testing_image \
+  -e ODOO_ADDONS_PATH="${ODOO_ADDONS_PATH:-/odoo/addons}" \
+  --rm "${TESTS_IMAGE_TAG}" \
   --database "${TESTS_DATABASE}" \
   --init "${TESTS_ADDONS}" \
   --stop-after-init \
   --workers=0 \
   --max-cron-threads=0 \
-  --test-tags='/base:TestRealCursor.test_connection_readonly'
+  --test-tags="${TESTS_TEST_TAGS}"
 
-#docker compose \
-#  run \
-#  --rm odoo -- \
-#  --db-host=odoo_testing_db \
-#  --database "${TESTS_DATABASE}" \
-#  --init "${TESTS_ADDONS}" \
-#  --stop-after-init \
-#  --workers=0 \
-#  --max-cron-threads=0 \
-#  --test-tags='/base:TestRealCursor.test_connection_readonly'
-##  --test-tags='standard,-/base:TestRealCursor.test_connection_readonly'
-##  --test-enable
-
+# Capture the exit code of the last command
 TEST_EXIT_CODE=$?
 
 # Cleanup our mess
 docker stop odoo_testing_db && \
 docker rm odoo_testing_db
 
+# Print our result and return the test status if
+# the status code does not equal 0
 if [ $TEST_EXIT_CODE -ne 0 ]; then
   echo "Tests failed (exit code $TEST_EXIT_CODE)"
   exit $TEST_EXIT_CODE
 fi
 
+# Everything passed!
 echo "All tests passed successfully. ${TEST_EXIT_CODE}"
 
 

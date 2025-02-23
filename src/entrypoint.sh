@@ -289,8 +289,6 @@ if [ -v PASSWORD_FILE ]; then
     DB_PASSWORD="$(< $PASSWORD_FILE)"
 fi
 
-echo "Odoo DB Port: ${ODOO_DB_PORT}"
-
 # Substitute environment variables into the config file
 # and write them back to the Odoo config
 envsubst < /volumes/config/odoo.conf > "${ODOO_RC}"

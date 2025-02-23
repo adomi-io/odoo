@@ -1,11 +1,15 @@
 # Download the source code from a branch
 # You can get the related corrisponding enterprise and design-themes versions by running
 # from odoo import release; print(release.repos_heads)
-FROM alpine/git AS source
+FROM alpine AS source
 
 ARG ODOO_VERSION=18.0
 ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
 
+# Install required packages: curl, jq, and tar (or unzip if needed)
+RUN apk add --no-cache git
+
+# The source code will be stored in /source/odoo
 WORKDIR /source
 
 # Grab the latest source from GitHub
@@ -13,7 +17,7 @@ RUN git clone  \
     --branch ${ODOO_VERSION}  \
     --single-branch  \
     --depth 1  \
-    ${ODOO_REPOSITORY} .
+    ${ODOO_REPOSITORY}
 
 # This build step will go download the latest version
 # of wkhtmltopdf (keep your eyes on https://github.com/odoo/paper-muncher)
@@ -120,6 +124,9 @@ LABEL source="Odoo" \
 # # Use /bin/bash with debugging (-x) and fail on pipeline errors (-o pipefail) for subsequent commands
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 
+# Which version of Python to setup in the venv
+ARG PYTHON_VERSION=3.12
+
 # We will be downloading various packages through the build process.
 # In order to avoid any bloat, we will use a setup directory.
 # At the end of the build step, this directly should be empty and removed.
@@ -144,7 +151,7 @@ ENV npm_config_prefix=/usr
 # If you set these, these values are baked into the container.
 # This means they will be the default if no other environment variable is specified at run-time.
 ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
-    ODOO_ADDONS_PATH="/volumes/addons" \
+    ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
     ODOO_SAVE="False" \
     ODOO_INIT="" \
     ODOO_UPDATE="" \
@@ -235,7 +242,7 @@ RUN apt-get update && \
         npm \
         libpq-dev \
         python3-dev \
-        python3-venv \
+        python3-virtualenv \
         libldap2-dev \
         libsasl2-dev \
 #        python3-magic \
@@ -262,19 +269,21 @@ RUN apt-get update && \
         libxcb1 \
         libxext6 \
         libxrender1 \
-        gettext && \
-        rm -rf /var/lib/apt/lists/*
+        gettext  \
+        postgresql-client \
+        libcairo2-dev \
+        && rm -rf /var/lib/apt/lists/*
 
 # Install the latest version of the Postgresql connector.
 # The Ubuntu version can occasionally fall out of date, so we add the apt repository,
 # per the postgresql docs: https://www.postgresql.org/download/linux/ubuntu/
-RUN install -d /usr/share/postgresql-common/pgdg && \
-    curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
-    echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
-    apt-get update && \
-    apt -y install postgresql && \
-    rm -f /etc/apt/sources.list.d/pgdg.list && \
-    rm -rf /var/lib/apt/lists/*
+#RUN install -d /usr/share/postgresql-common/pgdg && \
+#    curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+#    echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+#    apt-get update && \
+#    apt -y install postgresql && \
+#    rm -f /etc/apt/sources.list.d/pgdg.list && \
+#    rm -rf /var/lib/apt/lists/*
 
 # Copy the wkhtmltopdf binary that we fetched in the wkhtmltox build step
 COPY --from=wkhtmltox /wkhtmltox/wkhtmltox.deb wkhtmltox.deb
@@ -290,9 +299,9 @@ RUN npm install --force -g rtlcss@3.4.0
 #COPY --from=deb /output .
 
 # Install the Odoo .deb file we copied, and then remove it
-RUN apt-get update &&  \
-    apt-get -y install --no-install-recommends ./odoo.deb \
-    && rm -rf /var/lib/apt/lists/* odoo.deb
+#RUN apt-get update &&  \
+#    apt-get -y install --no-install-recommends ./odoo.deb \
+#    && rm -rf /var/lib/apt/lists/* odoo.deb
 
 # Create the data locations used by default, and create a default empty configuration file at _generated.conf
 RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
@@ -304,29 +313,46 @@ RUN chown -R ubuntu:ubuntu /volumes
 # Expose the volumes to allow users to mount these folders directly
 VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
 
-# Create a virtualenv to install Odoo into
-RUN python3 -m venv /app/venv
+# The /venv folder will house our Python virtual environment
+WORKDIR /venv
 
-# Set the current directory to the Odoo folder
-WORKDIR /odoo
+# Create a virtualenv to install Odoo into
+RUN virtualenv -p "python${PYTHON_VERSION}" /venv
+
+# Set the virtualenv to be the system default
+ENV PATH="/venv/bin:$PATH"
 
 # Copy the requirements.txt
 COPY --from=source /source/odoo/requirements.txt requirements.txt
 
+# Install the Odoo requirements
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Install some additional addons
+RUN pip install pycairo
+
+
+# Set the current directory to the Odoo folder.
+# This contains the source-code to Odoo
+WORKDIR /odoo
+
 # Copy the code from the source-fetching container and copy it into the Odoo folder
-COPY --from=source /odoo .
+COPY --from=source /source/odoo/ .
+
+# Install Odoo into the venv
+RUN pip install --no-cache-dir .
 
 # Odoo's unit tests check to ensure that addons are located at
 # /usr/lib/python3/dist-packages/addons.
 # This is not setup automatically and must be created for unit tests to pass
-RUN mkdir -p /usr/lib/python3/dist-packages/addons
+RUN mkdir -p "/venv/lib/python${PYTHON_VERSION}/site-packages/addons"
 
 # When Odoo is installed, it is installed into the odoo dist package:
-# /usr/lib/python3/dist-packages/odoo.
-# Odoo's unit tests expect there to be a dist-package installed called odoo-bin (test_upgrade_code.py)
-# We can create a sym link so the unit tests pass
-# This is a bit hacky but the same tests fail in the official container
-RUN ln -s /odoo/odoo-bin /usr/lib/python3/dist-packages/odoo-bin
+# /venv/lib/python3/site-packages/odoo.
+# Odoo's unit tests expect there to be a site-package installed called odoo-bin (test_upgrade_code.py)
+# We can create a sym link from our source directory to odoo-bin
+RUN ln -s /odoo/odoo-bin "/venv/lib/python${PYTHON_VERSION}/site-packages/odoo-bin"
 
 # Switch to Ubuntu user
 # Note: Odoo uses UID and GID 101:101 in its .deb setup step.
@@ -345,6 +371,8 @@ EXPOSE 8069 8071 8072
 
 # Copy the wait-for-psql script
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
+
+WORKDIR /volumes/addons
 
 # Get things started
 ENTRYPOINT ["/entrypoint.sh"]
