@@ -289,7 +289,7 @@ if [ -v PASSWORD_FILE ]; then
     DB_PASSWORD="$(< $PASSWORD_FILE)"
 fi
 
-ls -la /volumes/addons
+echo "Odoo DB Port: ${ODOO_DB_PORT}"
 
 # Substitute environment variables into the config file
 # and write them back to the Odoo config
@@ -301,12 +301,12 @@ case "$1" in
         if [[ "$1" == "scaffold" ]] ; then
             exec odoo "$@"
         else
-            wait-for-psql.py
+            wait-for-psql.py "$@"
             exec odoo "$@"
         fi
         ;;
     -*)
-        wait-for-psql.py
+        wait-for-psql.py "$@"
         exec odoo "$@"
         ;;
     *)

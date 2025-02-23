@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  odoo:
+    image: odoo:18
+    ports:
+      - "8069:8069"
+    environment:
+      HOST: db
+      PORT: 5433
+      USER: odoo
+      PASSWORD: odoo
+    depends_on:
+      - db
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+      POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
+    ports:
+      - "5433:5432"

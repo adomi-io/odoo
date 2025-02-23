@@ -6,7 +6,7 @@ FROM alpine/git AS source
 ARG ODOO_VERSION=18.0
 ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
 
-WORKDIR /odoo
+WORKDIR /source
 
 # Grab the latest source from GitHub
 RUN git clone  \
@@ -94,7 +94,7 @@ RUN apt-get update && \
 WORKDIR /build/src
 
 # Copy the source code from the source-fetching image
-COPY --from=source /odoo .
+COPY --from=source /source/odoo .
 
 # Compile the Odoo .deb file
 RUN dpkg-buildpackage -us -uc
@@ -238,21 +238,21 @@ RUN apt-get update && \
         python3-venv \
         libldap2-dev \
         libsasl2-dev \
-        python3-magic \
-        python3-num2words \
-        python3-odf \
-        python3-pdfminer \
-        python3-pip \
-        python3-phonenumbers \
-        python3-pyldap \
-        python3-qrcode \
-        python3-renderpm \
-        python3-setuptools \
-        python3-slugify \
-        python3-vobject \
-        python3-watchdog \
-        python3-xlrd \
-        python3-xlwt \
+#        python3-magic \
+#        python3-num2words \
+#        python3-odf \
+#        python3-pdfminer \
+#        python3-pip \
+#        python3-phonenumbers \
+#        python3-pyldap \
+#        python3-qrcode \
+#        python3-renderpm \
+#        python3-setuptools \
+#        python3-slugify \
+#        python3-vobject \
+#        python3-watchdog \
+#        python3-xlrd \
+#        python3-xlwt \
         xz-utils \
         fontconfig \
         xfonts-75dpi \
@@ -287,7 +287,7 @@ RUN apt-get install -y --no-install-recommends ./wkhtmltox.deb \
 RUN npm install --force -g rtlcss@3.4.0
 
 # Copy the deb file we compiled from source to the current image
-COPY --from=deb /output .
+#COPY --from=deb /output .
 
 # Install the Odoo .deb file we copied, and then remove it
 RUN apt-get update &&  \
@@ -298,14 +298,20 @@ RUN apt-get update &&  \
 RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
     && echo "[options]" > /volumes/config/_generated.conf
 
-# Set the owner to user:group odoo:odoo
+# Set the owner to user:group ubuntu:ubuntu
 RUN chown -R ubuntu:ubuntu /volumes
 
 # Expose the volumes to allow users to mount these folders directly
 VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
 
+# Create a virtualenv to install Odoo into
+RUN python3 -m venv /app/venv
+
 # Set the current directory to the Odoo folder
 WORKDIR /odoo
+
+# Copy the requirements.txt
+COPY --from=source /source/odoo/requirements.txt requirements.txt
 
 # Copy the code from the source-fetching container and copy it into the Odoo folder
 COPY --from=source /odoo .
