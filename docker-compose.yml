@@ -11,15 +11,13 @@ services:
       - "8071:8071"
       - "8072:8072"
     environment:
-      DATA_DIR: ${DATA_DIR:-/volumes/data}
-      DB_HOST: ${DB_HOST:-db}
-      DB_PORT: ${DB_PORT:-5432}
-      DB_USER: ${DB_USER:-odoo}
-      DB_PASSWORD: ${DB_PASSWORD:-odoo}
+      ODOO_DB_HOST: ${DB_HOST:-db}
+      ODOO_DB_PORT: ${DB_PORT:-5432}
+      ODOO_DB_USER: ${DB_USER:-odoo}
+      ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
 
       ## Optional Arguments
       # DB_NAME: ${DB_NAME:-postgres}
-      # ODOO_DEFAULT_ADDONS: ${ODOO_ADDONS_LOCATION:-/odoo/addons}
       # EXTRA_ADDONS: ${EXTRA_ADDONS:-/volumes/addons}
       # ADDONS_PATH: ${ADDONS_PATH:-/odoo/addons,/volumes/addons}
       # ADMIN_PASSWD: ${ADMIN_PASSWD:-admin}
@@ -58,11 +56,11 @@ services:
       # PSQL_WAIT_TIMEOUT: ${PSQL_WAIT_TIMEOUT:-30}
 
     volumes:
-      - odoo_data:/volumes/data
-      - ./addons:/volumes/addons
+      - ./src/odoo.conf:/volumes/config/odoo.conf
+#      - ./addons:/volumes/addons
+#      - odoo_data:/volumes/data
     depends_on:
       - db
-
   db:
     image: postgres:13
     container_name: odoo_db
@@ -70,8 +68,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-odoo}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
       POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
-    volumes:
-      - pg_data:/var/lib/postgresql/data
+#    volumes:
+#      - pg_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
