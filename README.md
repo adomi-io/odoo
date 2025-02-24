@@ -108,17 +108,62 @@ volumes:
   pg_data:
 ```
 
-# Mounting Addons
+# Extending this image
 
-## Mounting your addons
+This image is based on Ubuntu. 
 
-## Mounting OCA addons
+Extending this image will allow you to create your own image, set default environment variables, and bake
+your own config in as a default.
+
+Create a new Dockerfile in your project
+
+```dockerfile
+FROM ghcr.io/adomi-io/odoo:18.0
+
+# Copy your config file into the container
+COPY odoo.conf /volumes/config/odoo.conf
+
+# Copy your code into the addons folder
+COPY . /volumes/addons
+```
+
+#### Note: Python Virtualenv
+A virtual environment is setup at `/venv` inside the container which has Odoo and its dependencies already installed.
+
+This version of python is set in the containers path, so that you are able to use python as you normally would.
+
+eg, this will run in the virtualenv inside the container:
+```
+RUN pip install stripe
+RUN pip install -r requirements.txt
+RUN python myapp.py
+```
+
+# Adding additional addons
 
 ## Mounting Enterprise
 
+```dockerfile
+FROM ghcr.io/adomi-io/odoo:18.0
+
+# If you have a default config, you can copy this file into the container
+# COPY odoo.conf /volumes/config/odoo.conf
+
+# Copy your code into the addons folder
+COPY . /volumes/addons
+
+# Copy the Enterprise addons into the container located at /volumes/enterprise
+COPY ./odoo-enterprise/addons /volumes/odoo-enterprise
+
+# Add the path to the enterprise addons to the ODOO_ADDONS_PATH
+ENV ODOO_ADDONS_PATH="${ODOO_ADDONS_PATH},/volumes/odoo-enterprise"
+```
+
+## Mounting addon submodules
+
 # Configure your Odoo instances
 
-This Docker container uses `envsubst` to generate an `odoo.conf` file based on  environment variables. What this means is you can configure your Odoo configuration at all stages of the image's lifecycle. 
+This Docker container uses `envsubst` to generate an `odoo.conf` file based on your environment variables. What this means is you can configure your Odoo configuration at all stages of the image's lifecycle. 
 You can build values into your own docker container, set them at run-time via a mounted file, or defer those values to environment variables which you configure in your cloud providers UI.
 
 This documentation will take you through configuring your Odoo instances
@@ -187,7 +232,6 @@ included but are commented out by default.
 
 For details on extending this image, see the [Extending this image](#extending-this-image) section.
 
-
 These options are enabled by default, and can be set via environment variables:
 ```ini
 [options]
@@ -221,49 +265,28 @@ addons_path = $ODOO_ADDONS_PATH
 
 # disable loading demo data for modules to be installed (comma-separated, use "all" for all modules). Requires -d and -i. Default is %default (default: False)
 without_demo = $ODOO_WITHOUT_DEMO
-```
 
-## Debugging the generated config
+# HTTP Service Configuration
 
-The `odoo.conf` file is ran through `envsubst` and output to `/volumes/config/_generated.conf`.
+# Activate reverse proxy WSGI wrappers (headers rewriting). Only enable this when running behind a trusted web proxy! (default: False)
+proxy_mode = $ODOO_PROXY_MODE
 
-If you need to see the final results, you can mount to the `/volumes/config` folder.
+# Multiprocessing options (POSIX only)
 
-Move your config file in your project to `./config/odoo.conf`
+# Specify the number of workers, 0 disable prefork mode. (default: 0)
+workers = $ODOO_WORKERS
 
-Mount the `./config` folder this time instead, eg:
+# Maximum allowed virtual memory per worker (in bytes), when reached the worker will be reset after the current request (default 2048MiB). (default: 2147483648)
+limit_memory_soft = $ODOO_LIMIT_MEMORY_SOFT
 
-```yaml
-version: '3.8'
-services:
-  odoo:
-    image: ghcr.io/adomi-io/odoo:18.0
-    # ...
-    volumes:
-      - ./config:/volumes/config # This will mount your config folder into the container
-```
+# Maximum allowed virtual memory per worker (in bytes), when reached, any memory allocation will fail (default 2560MiB). (default: 2684354560)
+limit_memory_hard = $ODOO_LIMIT_MEMORY_HARD
 
-When the container starts, you will see a `_generated.conf` file appear in the `config` folder which contains the final
-configuration used by Odoo
+# Maximum allowed CPU time per request (default 60). (default: 60)
+limit_time_cpu = $ODOO_LIMIT_TIME_CPU
 
-
-# Extending this image
-
-This image is based on Alpine Linux. This is a light-weight distribution of Linux that removes a lot of extra bloat.
-
-Extending this image will allow you to create your own image, set default environment variables, and bake
-your own config in as a default.
-
-Create a new Dockerfile in your project
-
-```dockerfile
-FROM ghcr.io/adomi-io/odoo:18.0
-
-# Copy your config file into the container
-COPY odoo.conf /volumes/config/odoo.conf
-
-# Copy your code into the addons folder
-COPY . /volumes/addons
+# Maximum allowed Real time per request (default 120). (default: 120)
+limit_time_real = $ODOO_LIMIT_TIME_REAL
 ```
 
 ## Setting default variables
@@ -291,27 +314,23 @@ COPY . /volumes/addons
 
 ## Environment variable defaults
 
-
 The Dockerfile is built with default environment variables. If you do not override
 the environment variables when deploying your Odoo container,
 
 Double check the [Dockerfile](./src/Dockerfile) for more information
 
 ```dockerfile
-
-ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
-    EXTRA_ADDONS="/volumes/addons" \
-    ADDONS_PATH="/odoo/addons,/volumes/addons" \
+ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
+    ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
     ODOO_SAVE="False" \
     ODOO_INIT="" \
     ODOO_UPDATE="" \
     ODOO_WITHOUT_DEMO="False" \
     ODOO_IMPORT_PARTIAL="" \
     ODOO_PIDFILE="" \
-    ODOO_ADDONS_PATH="" \
     ODOO_UPGRADE_PATH="" \
     ODOO_SERVER_WIDE_MODULES="base,web" \
-    ODOO_DATA_DIR="/var/lib/odoo" \
+    ODOO_DATA_DIR="/volumes/data" \
     ODOO_HTTP_INTERFACE="" \
     ODOO_HTTP_PORT="8069" \
     ODOO_GEVENT_PORT="8072" \
@@ -319,43 +338,43 @@ ENV ODOO_CONFIG="/volumes/config/odoo.conf" \
     ODOO_PROXY_MODE="False" \
     ODOO_X_SENDFILE="False" \
     ODOO_DBFILTER="" \
-    ODOO_TEST_FILE="False" \
+    ODOO_TEST_FILE="" \
     ODOO_TEST_ENABLE="" \
     ODOO_TEST_TAGS="" \
     ODOO_SCREENCASTS="" \
     ODOO_SCREENSHOTS="/tmp/odoo_tests" \
     ODOO_LOGFILE="" \
-    ODOO_SYSLOG="False" \
+    ODOO_SYSLOG="" \
     ODOO_LOG_HANDLER=":INFO" \
-    ODOO_LOG_DB="False" \
+    ODOO_LOG_DB="" \
     ODOO_LOG_DB_LEVEL="warning" \
     ODOO_LOG_LEVEL="info" \
-    ODOO_EMAIL_FROM="False" \
-    ODOO_FROM_FILTER="False" \
+    ODOO_EMAIL_FROM="" \
+    ODOO_FROM_FILTER="" \
     ODOO_SMTP_SERVER="localhost" \
     ODOO_SMTP_PORT="25" \
-    ODOO_SMTP_SSL="False" \
-    ODOO_SMTP_USER="False" \
-    ODOO_SMTP_PASSWORD="False" \
-    ODOO_SMTP_SSL_CERTIFICATE_FILENAME="False" \
-    ODOO_SMTP_SSL_PRIVATE_KEY_FILENAME="False" \
-    ODOO_DB_NAME="False" \
-    ODOO_DB_USER="False" \
-    ODOO_DB_PASSWORD="False" \
+    ODOO_SMTP_SSL="" \
+    ODOO_SMTP_USER="" \
+    ODOO_SMTP_PASSWORD="" \
+    ODOO_SMTP_SSL_CERTIFICATE_FILENAME="" \
+    ODOO_SMTP_SSL_PRIVATE_KEY_FILENAME="" \
+    ODOO_DB_NAME="" \
+    ODOO_DB_USER="" \
+    ODOO_DB_PASSWORD="" \
     ODOO_PG_PATH="" \
-    ODOO_DB_HOST="False" \
-    ODOO_DB_REPLICA_HOST="False" \
-    ODOO_DB_PORT="False" \
-    ODOO_DB_REPLICA_PORT="False" \
+    ODOO_DB_HOST="" \
+    ODOO_DB_REPLICA_HOST="" \
+    ODOO_DB_PORT="" \
+    ODOO_DB_REPLICA_PORT="" \
     ODOO_DB_SSLMODE="prefer" \
     ODOO_DB_MAXCONN="64" \
-    ODOO_DB_MAXCONN_GEVENT="False" \
+    ODOO_DB_MAXCONN_GEVENT="" \
     ODOO_DB_TEMPLATE="template0" \
     ODOO_LOAD_LANGUAGE="" \
     ODOO_LANGUAGE="" \
     ODOO_TRANSLATE_OUT="" \
     ODOO_TRANSLATE_IN="" \
-    ODOO_OVERWRITE_EXISTING_TRANSLATIONS="False" \
+    ODOO_OVERWRITE_EXISTING_TRANSLATIONS="" \
     ODOO_TRANSLATE_MODULES="" \
     ODOO_LIST_DB="True" \
     ODOO_DEV_MODE="" \
@@ -392,14 +411,50 @@ To add a new configuration variable:
    ```
 3. **Deploy:** On container startup, the placeholder is replaced with the value from your environment.
 
-# Testing your code
+# Development with this container
+You can use this container as a development environment.
+
+## Docker Compose
+
+Follow the [Docker Compose](#docker-compose) setup. This will mount your `./addons`
+folder into the docker container, so your changes will reflect immediately in Odoo.
+
+Note for some changes to take effect, for example, UI changes, you will need to go to `Apps` and update your app.
+
+You can use the `venv` inside the docker container for debugging and breakpoints inside of PyCharm
+
+-- todo: Publishing the changes so we can work on this with a project in pycharm
+
+## Debugging the generated config
+
+The `odoo.conf` file is ran through `envsubst` and output to `/volumes/config/_generated.conf`.
+
+If you need to see the final results, you can mount to the `/volumes/config` folder.
+
+Move your config file in your project to `./config/odoo.conf`
+
+Mount the `./config` folder this time instead, eg:
+
+```yaml
+version: '3.8'
+services:
+  odoo:
+    image: ghcr.io/adomi-io/odoo:18.0
+    # ...
+    volumes:
+      - ./config:/volumes/config # This will mount your config folder into the container
+```
+
+When the container starts, you will see a `_generated.conf` file appear in the `config` folder which contains the final
+configuration used by Odoo
+
+## Testing your code
 
 ## Unit Testing with Environment Variables
 
 This docker container supports the testing flags as environment variables.
 
 You can build a custom Dockerimage dedicated to testing your code by extending this image
-
 
 # Maintaining this repository
 
@@ -409,13 +464,14 @@ This repository works by mirroring the Odoo version branch names.
 
 When a new version of Odoo releases, create a branch in this repository with the same name.
 
-Add the branch name to the [.github/workflows/docker-publish.yml](./.github/workflows/docker-publish.yml) 
+Add the branch name to the [docker-publish.yml](./.github/workflows/docker-publish.yml) 
 file under `push` and `pull_request` branches.
 
-The resulting image will automatically be built, unit-tested, deployed, and scheduled for update.
+The resulting image will automatically be built, unit-tested, deployed, and scheduled the branch for nightly builds.
 
-## Repository unit tests
+## Testing
 
+### Unit Tests
 The testing script is located in [./tests/unit-tests.sh](./tests/unit-tests.sh)
 
 This will create a Postgres database, install all the selected Odoo addons,
@@ -427,26 +483,15 @@ To run these tests, clone the repository:
 
 `cd` into the cloned repository
 
-`cd odoo`
+`cd ./odoo/tests`
 
-From the root folder, run the unit test script
+From the tests folder, run the unit test script
 
 `./tests/unit-tests.sh`
 
-## Custom Tests
+### Front end testing & tours
 
-You can run unit tests with the docker compose file. This will spin up a Postgres
-database, install the addons of your choice, and run their corresponding unit tests.
-
-For example, this will use a database named testing, install base and web, and run their unit tests:
-
-```yml
-docker compose run --rm odoo -- \
-    -d testing \
-    --update=base,web \
-    --stop-after-init \
-    --test-enable
-```
+This is not currently finished
 
 # License
 

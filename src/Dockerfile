@@ -272,6 +272,7 @@ RUN apt-get update && \
         gettext  \
         postgresql-client \
         libcairo2-dev \
+        libcairo2 \
         && rm -rf /var/lib/apt/lists/*
 
 # Install the latest version of the Postgresql connector.
@@ -330,7 +331,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 # Install some additional addons
-RUN pip install pycairo
+RUN pip install rlpycairo
 
 
 # Set the current directory to the Odoo folder.
