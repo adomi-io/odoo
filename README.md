@@ -127,6 +127,36 @@ COPY odoo.conf /volumes/config/odoo.conf
 COPY . /volumes/addons
 ```
 
+#### Running your image with Docker Compose
+Follow the [Docker Compose](#docker-compose) section.
+
+Replace the `image` tag with `build`, eg:
+
+```dockerfile
+version: '3.8'
+services:
+  odoo:
+    image: ghcr.io/adomi-io/odoo:18.0
+    # ...
+```
+
+becomes:
+
+```dockerfile
+version: '3.1'
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # ...
+```
+
+Then you can run
+```sh
+docker compose build && docker compose up
+```
+
 #### Note: Python Virtualenv
 A virtual environment is setup at `/venv` inside the container which has Odoo and its dependencies already installed.
 
@@ -139,9 +169,11 @@ RUN pip install -r requirements.txt
 RUN python myapp.py
 ```
 
-# Adding additional addons
+# Mounting Enterprise
 
-## Mounting Enterprise
+Due to licensing, you will need to extend this image.
+
+Create a `Dockerfile` in your project with the following content:
 
 ```dockerfile
 FROM ghcr.io/adomi-io/odoo:18.0
@@ -149,8 +181,8 @@ FROM ghcr.io/adomi-io/odoo:18.0
 # If you have a default config, you can copy this file into the container
 # COPY odoo.conf /volumes/config/odoo.conf
 
-# Copy your code into the addons folder
-COPY . /volumes/addons
+# Copy your code (assumed to be in ./addons) into the addons folder inside the container
+COPY ./addons /volumes/addons
 
 # Copy the Enterprise addons into the container located at /volumes/enterprise
 COPY ./odoo-enterprise/addons /volumes/odoo-enterprise
@@ -448,26 +480,20 @@ services:
 When the container starts, you will see a `_generated.conf` file appear in the `config` folder which contains the final
 configuration used by Odoo
 
-## Testing your code
-
-## Unit Testing with Environment Variables
-
-This docker container supports the testing flags as environment variables.
-
-You can build a custom Dockerimage dedicated to testing your code by extending this image
-
 # Maintaining this repository
 
 ## Adding a new version of Odoo
 When Odoo launches a new version, they publish the changes on its own branch. 
 This repository works by mirroring the Odoo version branch names. 
 
-When a new version of Odoo releases, create a branch in this repository with the same name.
+When a new version of Odoo releases, create a branch in this 
+repository with the same name as the Odoo branch you wish to track.
 
 Add the branch name to the [docker-publish.yml](./.github/workflows/docker-publish.yml) 
 file under `push` and `pull_request` branches.
 
-The resulting image will automatically be built, unit-tested, deployed, and scheduled the branch for nightly builds.
+The resulting image will automatically be built, unit-tested, 
+deployed, and scheduled the branch for nightly builds.
 
 ## Testing
 
@@ -479,7 +505,10 @@ and run their corresponding unit tests.
 
 To run these tests, clone the repository:
 
-`git@github.com:adomi-io/odoo.git`
+
+```sh
+git clone git@github.com:adomi-io/odoo.git
+```
 
 `cd` into the cloned repository
 
@@ -487,7 +516,10 @@ To run these tests, clone the repository:
 
 From the tests folder, run the unit test script
 
+```sh
 `./tests/unit-tests.sh`
+```
+
 
 ### Front end testing & tours
 
