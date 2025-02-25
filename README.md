@@ -295,7 +295,7 @@ with:
 ```yaml
 version: '3.1'
 services:
-  web:
+  odoo:
     build:
       context: .
       dockerfile: Dockerfile
