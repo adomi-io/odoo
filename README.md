@@ -658,6 +658,7 @@ If you dont already have it, consider it, its excellent!
 
 
 <details><summary>Use this container as a development environment w/ Breakpoints</summary>
+
 ## Docker Compose
 
 Follow the [Docker Compose](#docker-compose) setup. This will mount your `./addons` folder into the container so that your changes are reflected immediately in Odoo.
