@@ -14,7 +14,7 @@ For those seeking the official container, please visit [odoo/docker](https://git
 
 # Why a Different Container?
 
-This container is built for developers, infrastructure teams, and companies looking to deploy Odoo on cloud platforms or offer it as part of a SaaS/IaaS solution.
+This container is built for developers, infrastructure teams, and companies looking to deploy Odoo on cloud platforms or offer Odoo as part of a SaaS/IaaS solution.
 
 Using `envsubst` with environment variables, the container generates your Odoo configuration on the fly. This lets you customize your setup without modifying the base image, streamlining deployments and scaling your instances effortlessly.
 
@@ -25,7 +25,8 @@ Features include:
 - An open, automated build process via [GitHub Actions](./.github/workflows/docker-publish.yml)
 - Robust, open unit testing ([tests/unit-tests.sh](./tests/unit-tests.sh))
 
-Built nightly from the latest code in the official [Odoo GitHub repository](https://github.com/odoo/odoo), this container ensures you’re always running the most current version for your specific Odoo release.
+Built nightly from the latest code in the official [Odoo GitHub repository](https://github.com/odoo/odoo), 
+this container ensures you’re always running the most up-to-date version of Odoo.
 
 
 ## 🚀 Key Features at a Glance
@@ -33,7 +34,6 @@ Built nightly from the latest code in the official [Odoo GitHub repository](http
 - 🔧 **Flexible Configuration:** Tweak your Odoo instance on the fly with environment variables and secret files—no rebuilds needed.
 - ☁️ **Cloud Native:** Seamlessly deploy across Amazon ECS, Kubernetes, Digital Ocean, and more.
 - 🏢 **Multi-Tenant Ready:** Perfect for SaaS/IaaS setups looking to support multiple Odoo tenants effortlessly.
-- 🌟 **Community Driven:** Built and maintained by a passionate community, ensuring continuous improvements and real-world usability.
 - 🔄 **Nightly Builds:** Stay current with the latest code pulled directly from the official Odoo GitHub repository.
 - 🧪 **Robust Testing:** Benefit from open, reliable unit tests that keep your deployments running smoothly.
 - 🛠️ **Easy Extension:** Quickly extend the container to integrate Odoo Enterprise or your custom modules.
@@ -51,7 +51,7 @@ docker pull ghcr.io/adomi-io/odoo:18.0
 
 
 | Odoo                                               | Pull Command                                 |
-|----------------------------------------------------|----------------------------------------------|
+|-|-|
 | [18.0](https://github.com/adomi-io/odoo/tree/18.0) | ```docker pull ghcr.io/adomi-io/odoo:18.0``` |
 | [17.0](https://github.com/adomi-io/odoo/tree/17.0) | ```docker pull ghcr.io/adomi-io/odoo:17.0``` |
 | [16.0](https://github.com/adomi-io/odoo/tree/16.0) | ```docker pull ghcr.io/adomi-io/odoo:16.0``` |
@@ -211,7 +211,7 @@ This command loads all the variables from your `.env` file into the container.
 
 When you run `docker compose up`, Docker Compose will load the environment variables from the specified file, keeping your configuration tidy and secure.
 
-Using an `.env` file makes it easy to manage environment-specific settings and ensures your sensitive data isn’t hard-coded into your commands or configuration files. Enjoy the clean setup!
+Using an `.env` file makes it easy to manage environment-specific settings and ensures your sensitive data isn’t hard-coded into your commands or configuration files. 
 
 ### Using Secret Files
 
@@ -261,7 +261,6 @@ This method keeps your secrets out of your code and environment, making your dep
 
 This image is built on Ubuntu, making it easy to extend. Customize your own image by setting default environment variables, baking your Odoo config, and adding your custom addons. You can even pre-build a container with Odoo Enterprise.
 
----
 
 ### Create a Custom Dockerfile
 
@@ -276,8 +275,6 @@ FROM ghcr.io/adomi-io/odoo:18.0
 # Copy your custom addons into the container
 COPY . /volumes/addons
 ```
-
----
 
 ### Running Your Image with Docker Compose
 
@@ -308,8 +305,6 @@ Then build and start your container with:
 ```sh
 docker compose build && docker compose up
 ```
-
----
 
 ### Note: Python Virtualenv
 
@@ -347,8 +342,6 @@ Finally, build and run your container:
 ```sh
 docker compose build && docker compose up
 ```
-
----
 
 ### Downloaded Enterprise 
 
@@ -545,83 +538,83 @@ your Odoo container, the defaults will be used. For more details, check the [Doc
 
 ```dockerfile
 ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
-ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
-ODOO_SAVE="False" \
-ODOO_INIT="" \
-ODOO_UPDATE="" \
-ODOO_WITHOUT_DEMO="False" \
-ODOO_IMPORT_PARTIAL="" \
-ODOO_PIDFILE="" \
-ODOO_UPGRADE_PATH="" \
-ODOO_SERVER_WIDE_MODULES="base,web" \
-ODOO_DATA_DIR="/volumes/data" \
-ODOO_HTTP_INTERFACE="" \
-ODOO_HTTP_PORT="8069" \
-ODOO_GEVENT_PORT="8072" \
-ODOO_HTTP_ENABLE="True" \
-ODOO_PROXY_MODE="False" \
-ODOO_X_SENDFILE="False" \
-ODOO_DBFILTER="" \
-ODOO_TEST_FILE="" \
-ODOO_TEST_ENABLE="" \
-ODOO_TEST_TAGS="" \
-ODOO_SCREENCASTS="" \
-ODOO_SCREENSHOTS="/tmp/odoo_tests" \
-ODOO_LOGFILE="" \
-ODOO_SYSLOG="" \
-ODOO_LOG_HANDLER=":INFO" \
-ODOO_LOG_DB="" \
-ODOO_LOG_DB_LEVEL="warning" \
-ODOO_LOG_LEVEL="info" \
-ODOO_EMAIL_FROM="" \
-ODOO_FROM_FILTER="" \
-ODOO_SMTP_SERVER="localhost" \
-ODOO_SMTP_PORT="25" \
-ODOO_SMTP_SSL="" \
-ODOO_SMTP_USER="" \
-ODOO_SMTP_PASSWORD="" \
-ODOO_SMTP_SSL_CERTIFICATE_FILENAME="" \
-ODOO_SMTP_SSL_PRIVATE_KEY_FILENAME="" \
-ODOO_DB_NAME="" \
-ODOO_DB_USER="" \
-ODOO_DB_PASSWORD="" \
-ODOO_PG_PATH="" \
-ODOO_DB_HOST="" \
-ODOO_DB_REPLICA_HOST="" \
-ODOO_DB_PORT="" \
-ODOO_DB_REPLICA_PORT="" \
-ODOO_DB_SSLMODE="prefer" \
-ODOO_DB_MAXCONN="64" \
-ODOO_DB_MAXCONN_GEVENT="" \
-ODOO_DB_TEMPLATE="template0" \
-ODOO_LOAD_LANGUAGE="" \
-ODOO_LANGUAGE="" \
-ODOO_TRANSLATE_OUT="" \
-ODOO_TRANSLATE_IN="" \
-ODOO_OVERWRITE_EXISTING_TRANSLATIONS="" \
-ODOO_TRANSLATE_MODULES="" \
-ODOO_LIST_DB="True" \
-ODOO_DEV_MODE="" \
-ODOO_SHELL_INTERFACE="" \
-ODOO_STOP_AFTER_INIT="False" \
-ODOO_OSV_MEMORY_COUNT_LIMIT="0" \
-ODOO_TRANSIENT_AGE_LIMIT="1.0" \
-ODOO_MAX_CRON_THREADS="2" \
-ODOO_LIMIT_TIME_WORKER_CRON="0" \
-ODOO_UNACCENT="False" \
-ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
-ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
-ODOO_WORKERS="0" \
-ODOO_LIMIT_MEMORY_SOFT="2147483648" \
-ODOO_LIMIT_MEMORY_SOFT_GEVENT="False" \
-ODOO_LIMIT_MEMORY_HARD="2684354560" \
-ODOO_LIMIT_MEMORY_HARD_GEVENT="False" \
-ODOO_LIMIT_TIME_CPU="60" \
-ODOO_LIMIT_TIME_REAL="120" \
-ODOO_LIMIT_TIME_REAL_CRON="-1" \
-ODOO_LIMIT_REQUEST="65536" \
-IMAGE_SECRETS_DIR="/run/secrets" \
-IMAGE_ODOO_ENTERPRISE_LOCATION="/volumes/enterprise"
+    ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
+    ODOO_SAVE="False" \
+    ODOO_INIT="" \
+    ODOO_UPDATE="" \
+    ODOO_WITHOUT_DEMO="False" \
+    ODOO_IMPORT_PARTIAL="" \
+    ODOO_PIDFILE="" \
+    ODOO_UPGRADE_PATH="" \
+    ODOO_SERVER_WIDE_MODULES="base,web" \
+    ODOO_DATA_DIR="/volumes/data" \
+    ODOO_HTTP_INTERFACE="" \
+    ODOO_HTTP_PORT="8069" \
+    ODOO_GEVENT_PORT="8072" \
+    ODOO_HTTP_ENABLE="True" \
+    ODOO_PROXY_MODE="False" \
+    ODOO_X_SENDFILE="False" \
+    ODOO_DBFILTER="" \
+    ODOO_TEST_FILE="" \
+    ODOO_TEST_ENABLE="" \
+    ODOO_TEST_TAGS="" \
+    ODOO_SCREENCASTS="" \
+    ODOO_SCREENSHOTS="/tmp/odoo_tests" \
+    ODOO_LOGFILE="" \
+    ODOO_SYSLOG="" \
+    ODOO_LOG_HANDLER=":INFO" \
+    ODOO_LOG_DB="" \
+    ODOO_LOG_DB_LEVEL="warning" \
+    ODOO_LOG_LEVEL="info" \
+    ODOO_EMAIL_FROM="" \
+    ODOO_FROM_FILTER="" \
+    ODOO_SMTP_SERVER="localhost" \
+    ODOO_SMTP_PORT="25" \
+    ODOO_SMTP_SSL="" \
+    ODOO_SMTP_USER="" \
+    ODOO_SMTP_PASSWORD="" \
+    ODOO_SMTP_SSL_CERTIFICATE_FILENAME="" \
+    ODOO_SMTP_SSL_PRIVATE_KEY_FILENAME="" \
+    ODOO_DB_NAME="" \
+    ODOO_DB_USER="" \
+    ODOO_DB_PASSWORD="" \
+    ODOO_PG_PATH="" \
+    ODOO_DB_HOST="" \
+    ODOO_DB_REPLICA_HOST="" \
+    ODOO_DB_PORT="" \
+    ODOO_DB_REPLICA_PORT="" \
+    ODOO_DB_SSLMODE="prefer" \
+    ODOO_DB_MAXCONN="64" \
+    ODOO_DB_MAXCONN_GEVENT="" \
+    ODOO_DB_TEMPLATE="template0" \
+    ODOO_LOAD_LANGUAGE="" \
+    ODOO_LANGUAGE="" \
+    ODOO_TRANSLATE_OUT="" \
+    ODOO_TRANSLATE_IN="" \
+    ODOO_OVERWRITE_EXISTING_TRANSLATIONS="" \
+    ODOO_TRANSLATE_MODULES="" \
+    ODOO_LIST_DB="True" \
+    ODOO_DEV_MODE="" \
+    ODOO_SHELL_INTERFACE="" \
+    ODOO_STOP_AFTER_INIT="False" \
+    ODOO_OSV_MEMORY_COUNT_LIMIT="0" \
+    ODOO_TRANSIENT_AGE_LIMIT="1.0" \
+    ODOO_MAX_CRON_THREADS="2" \
+    ODOO_LIMIT_TIME_WORKER_CRON="0" \
+    ODOO_UNACCENT="False" \
+    ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
+    ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
+    ODOO_WORKERS="0" \
+    ODOO_LIMIT_MEMORY_SOFT="2147483648" \
+    ODOO_LIMIT_MEMORY_SOFT_GEVENT="False" \
+    ODOO_LIMIT_MEMORY_HARD="2684354560" \
+    ODOO_LIMIT_MEMORY_HARD_GEVENT="False" \
+    ODOO_LIMIT_TIME_CPU="60" \
+    ODOO_LIMIT_TIME_REAL="120" \
+    ODOO_LIMIT_TIME_REAL_CRON="-1" \
+    ODOO_LIMIT_REQUEST="65536" \
+    IMAGE_SECRETS_DIR="/run/secrets" \
+    IMAGE_ODOO_ENTERPRISE_LOCATION="/volumes/enterprise"
 ```
 
 ## Building Default Configuration into the Image
@@ -670,8 +663,6 @@ Follow the [Docker Compose](#docker-compose) setup. This will mount your `./addo
 > **Note:** For certain changes (e.g., UI updates), you'll need to go to `Apps` and update your app.
 
 You can also use the virtual environment (`venv`) inside the container for debugging and setting breakpoints in PyCharm.
-
----
 
 #### Considerations
 
@@ -736,8 +727,6 @@ volumes:
   odoo_data:
 ```
 
----
-
 #### Adding the venv as an Interpreter in PyCharm
 
 1. Go to **File → Settings → Project → Python Interpreter**.
@@ -755,7 +744,6 @@ volumes:
 
 5. Click **Create**.
 
----
 
 #### Adding a Debug Configuration
 
@@ -805,7 +793,7 @@ Then, add the branch name to the [docker-publish.yml](./.github/workflows/docker
 
 The resulting image will be automatically built, unit-tested, deployed, and scheduled for nightly builds.
 
----
+
 
 ## Testing
 
@@ -837,7 +825,7 @@ Finally, run the unit test script:
 
 Front end testing and tours are not currently finished.
 
----
+
 
 # License
 
