@@ -19,11 +19,11 @@ to build and launch Odoo containers with cloud providers, companies who want a r
 or startups looking to offer Odoo as part of a SaaS or IaaS product.
 
 Odoo configuration is generated through `envsubst` and environment variables, making it
-simple to customize your setup without modifying your base image, automate deployments and build process, 
+simple to customize your setup without modifying your base image, automate your deployments and build process, 
 and scale your Odoo instances effortlessly.
 
 This repository supports [super simple deployments of Odoo enterprise](#extending-this-image-with-odoo-enterprise), 
-[powerful extension options](#extending-this-image), [a multi-stage well-documented build process](./src/Dockerfile),
+[powerful extension options](#extending-this-image), [a multi-stage well-documented Dockerfile](./src/Dockerfile),
 an [open automated build process via GitHub Actions](./.github/workflows/docker-publish.yml), and 
 [robust and open unit testing](./tests/unit-tests.sh). 
 
