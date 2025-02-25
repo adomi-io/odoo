@@ -288,13 +288,13 @@ export ODOO_LIMIT_REQUEST="${ODOO_LIMIT_REQUEST:-65536}"
 IMAGE_ODOO_ENTERPRISE_LOCATION="${IMAGE_ODOO_ENTERPRISE_LOCATION:-/volumes/enterprise}"
 
 # If the enterprise folder exists, add it to the ODOO_ADDONS_PATH
-if [ -d "$DOCKER_ENTERPRISE_LOCATION" ]; then
+if [ -d "${IMAGE_ODOO_ENTERPRISE_LOCATION}" ]; then
     echo "Odoo Enterprise has been detected"
 
     if [ -z "$ODOO_ADDONS_PATH" ]; then
-        export ODOO_ADDONS_PATH="$DOCKER_ENTERPRISE_LOCATION"
+        export ODOO_ADDONS_PATH="$IMAGE_ODOO_ENTERPRISE_LOCATION"
     else
-        export ODOO_ADDONS_PATH="$ODOO_ADDONS_PATH,$DOCKER_ENTERPRISE_LOCATION"
+        export ODOO_ADDONS_PATH="$ODOO_ADDONS_PATH,$IMAGE_ODOO_ENTERPRISE_LOCATION"
     fi
 fi
 
@@ -302,8 +302,8 @@ fi
 IMAGE_SECRETS_DIR="${IMAGE_SECRETS_DIR:-/run/secrets}"
 
 # Loop through each file in the configured secrets directory and export its content as an environment variable
-if [ -d "IMAGE_SECRETS_DIR" ]; then
-    for secret in "IMAGE_SECRETS_DIR"/*; do
+if [ -d "$IMAGE_SECRETS_DIR" ]; then
+    for secret in "$IMAGE_SECRETS_DIR"/*; do
         # Ensure we're dealing with a regular file
         [ -f "$secret" ] || continue
 
@@ -315,6 +315,8 @@ if [ -d "IMAGE_SECRETS_DIR" ]; then
         export "${env_var}=$(< "$secret")"
     done
 fi
+
+echo "TEST SECRET: ${TEST_SECRET}"
 
 IMAGE_CONFIG_LOCATION="${IMAGE_CONFIG_LOCATION:-/volumes/config/odoo.conf}"
 
