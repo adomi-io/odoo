@@ -1,3 +1,13 @@
+<br/>
+<br/>
+
+<p align="center">
+    <img src="static/repo_header_final.gif" width="280" />
+</p>
+<br/>
+<br/>
+
+
 # Adomi-io - Odoo
 
 This is an Odoo Docker container that is made for developers or infrastructure teams who are looking
@@ -510,11 +520,11 @@ To run these tests, clone the repository:
 git clone git@github.com:adomi-io/odoo.git
 ```
 
-`cd` into the cloned repository
+`cd` into the `tests` folder of the cloned repository
 
 `cd ./odoo/tests`
 
-From the tests folder, run the unit test script
+From the `tests` folder, run the unit test script
 
 ```sh
 `./tests/unit-tests.sh`
