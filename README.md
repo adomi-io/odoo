@@ -200,11 +200,6 @@ services:
       ODOO_DB_USER: ${DB_USER:-odoo}
       # We will load this from the secret file
       # ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
-    volumes:
-      - ./src/odoo.conf:/volumes/config/odoo.conf
-      - ./addons:/volumes/addons
-      - odoo_data:/volumes/data
-    # Add the secret to the container to mount it in the secrets folder
     secrets:
       - odoo_db_password
 
