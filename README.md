@@ -23,7 +23,7 @@ simple to customize your setup without modifying your base image, automate your 
 and scale your Odoo instances effortlessly.
 
 This repository supports [super simple deployments of Odoo enterprise](#extending-this-image-with-odoo-enterprise), 
-[powerful extension options](#extending-this-image), [a multi-stage well-documented Dockerfile](./src/Dockerfile),
+[powerful extension options](#extending-this-image), [a well-documented multi-stage Dockerfile](./src/Dockerfile),
 an [open automated build process via GitHub Actions](./.github/workflows/docker-publish.yml), and 
 [robust and open unit testing](./tests/unit-tests.sh). 
 
