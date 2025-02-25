@@ -86,6 +86,8 @@ docker run --name odoo \
 
 This Docker Compose file will launch a copy of Odoo along with a Postgres database.
 
+Create a file in your project called `docker-compose.yml`
+
 ```yaml
 version: '3.8'
 
