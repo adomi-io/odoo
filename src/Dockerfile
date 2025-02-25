@@ -225,7 +225,9 @@ ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
     ODOO_LIMIT_TIME_CPU="60" \
     ODOO_LIMIT_TIME_REAL="120" \
     ODOO_LIMIT_TIME_REAL_CRON="-1" \
-    ODOO_LIMIT_REQUEST="65536"
+    ODOO_LIMIT_REQUEST="65536" \
+    IMAGE_SECRETS_DIR="/run/secrets" \
+    IMAGE_ODOO_ENTERPRISE_LOCATION="/volumes/enterprise"
 
 # Install Odoo dependencies and system packages
 RUN apt-get update && \
@@ -245,21 +247,6 @@ RUN apt-get update && \
         python3-virtualenv \
         libldap2-dev \
         libsasl2-dev \
-#        python3-magic \
-#        python3-num2words \
-#        python3-odf \
-#        python3-pdfminer \
-#        python3-pip \
-#        python3-phonenumbers \
-#        python3-pyldap \
-#        python3-qrcode \
-#        python3-renderpm \
-#        python3-setuptools \
-#        python3-slugify \
-#        python3-vobject \
-#        python3-watchdog \
-#        python3-xlrd \
-#        python3-xlwt \
         xz-utils \
         fontconfig \
         xfonts-75dpi \

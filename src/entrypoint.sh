@@ -284,9 +284,36 @@ export ODOO_LIMIT_TIME_REAL_CRON="${ODOO_LIMIT_TIME_REAL_CRON:--1}"
 # limit_request (default 65536)
 export ODOO_LIMIT_REQUEST="${ODOO_LIMIT_REQUEST:-65536}"
 
-# Set the password file environment variable
-if [ -v PASSWORD_FILE ]; then
-    DB_PASSWORD="$(< $PASSWORD_FILE)"
+# Docker Specific configuration
+IMAGE_ODOO_ENTERPRISE_LOCATION="${IMAGE_ODOO_ENTERPRISE_LOCATION:-/volumes/enterprise}"
+
+# If the enterprise folder exists, add it to the ODOO_ADDONS_PATH
+if [ -d "$DOCKER_ENTERPRISE_LOCATION" ]; then
+    echo "Odoo Enterprise has been detected"
+
+    if [ -z "$ODOO_ADDONS_PATH" ]; then
+        export ODOO_ADDONS_PATH="$DOCKER_ENTERPRISE_LOCATION"
+    else
+        export ODOO_ADDONS_PATH="$ODOO_ADDONS_PATH,$DOCKER_ENTERPRISE_LOCATION"
+    fi
+fi
+
+# Set the secrets directory from the environment variable IMAGE_SECRETS_DIR (defaulting to /run/secrets)
+IMAGE_SECRETS_DIR="${IMAGE_SECRETS_DIR:-/run/secrets}"
+
+# Loop through each file in the configured secrets directory and export its content as an environment variable
+if [ -d "IMAGE_SECRETS_DIR" ]; then
+    for secret in "IMAGE_SECRETS_DIR"/*; do
+        # Ensure we're dealing with a regular file
+        [ -f "$secret" ] || continue
+
+        # Get the secret's filename and convert it to uppercase (e.g., odoo_db_password -> ODOO_DB_PASSWORD)
+        secret_name=$(basename "$secret")
+        env_var=$(echo "$secret_name" | tr '[:lower:]' '[:upper:]')
+
+        # Read the secret's content and export it as an environment variable
+        export "${env_var}=$(< "$secret")"
+    done
 fi
 
 # Substitute environment variables into the config file
@@ -310,5 +337,7 @@ case "$1" in
     *)
         exec "$@"
 esac
+
+echo "Closing"
 
 exit 1
