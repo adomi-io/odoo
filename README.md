@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="static/repo_header_final.gif" width="280" />
+    <img src="static/repo_header_final.png" width="580" />
 </p>
 
 
