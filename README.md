@@ -5,12 +5,12 @@
 
 # Adomi-io - Odoo
 
-Adomi is an Odoo partner and consulting company which offers Odoo as part of our development process.
-This repository contains Adomi's docker image for Odoo. This is not the official Odoo docker container. 
-If you are looking for the official docker container, please go here:
+Adomi is an Odoo partner and consulting company. We integrate Odoo into our development process to deliver efficient and scalable ERP solutions.
 
-### [odoo/docker](https://github.com/odoo/docker)
+Our Docker image for Odoo is designed with speed, reliability, and flexibility in mind—providing a production-ready alternative that has been refined by our experienced team. 
+While this isn't the official Odoo Docker container, it offers a robust and optimized solution for your deployment needs.
 
+For those seeking the official container, please visit [odoo/docker](https://github.com/odoo/docker).
 
 # Why a Different Container?
 
