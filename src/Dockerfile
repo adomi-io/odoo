@@ -137,8 +137,8 @@ ENV LANG=C.UTF-8
 
 # Set the location of the input and output file for our config.
 # ODOO_RC is checked by Odoo in the config.py script
-ENV ODOO_CONFIG=/volumes/config/odoo.conf \
-    ODOO_RC=/volumes/config/_generated.conf
+ENV ODOO_RC=/volumes/config/_generated.conf \
+    IMAGE_CONFIG_LOCATION=/volumes/config/odoo.conf
 
 # ENV NODE_PATH=/usr/lib/node_modules/
 ENV NODE_PATH=/usr/lib/node_modules/
@@ -225,7 +225,9 @@ ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
     ODOO_LIMIT_TIME_CPU="60" \
     ODOO_LIMIT_TIME_REAL="120" \
     ODOO_LIMIT_TIME_REAL_CRON="-1" \
-    ODOO_LIMIT_REQUEST="65536"
+    ODOO_LIMIT_REQUEST="65536" \
+    IMAGE_SECRETS_DIR="/run/secrets" \
+    IMAGE_ODOO_ENTERPRISE_LOCATION="/volumes/enterprise"
 
 # Install Odoo dependencies and system packages
 RUN apt-get update && \
@@ -245,21 +247,6 @@ RUN apt-get update && \
         python3-virtualenv \
         libldap2-dev \
         libsasl2-dev \
-#        python3-magic \
-#        python3-num2words \
-#        python3-odf \
-#        python3-pdfminer \
-#        python3-pip \
-#        python3-phonenumbers \
-#        python3-pyldap \
-#        python3-qrcode \
-#        python3-renderpm \
-#        python3-setuptools \
-#        python3-slugify \
-#        python3-vobject \
-#        python3-watchdog \
-#        python3-xlrd \
-#        python3-xlwt \
         xz-utils \
         fontconfig \
         xfonts-75dpi \
@@ -275,16 +262,6 @@ RUN apt-get update && \
         libcairo2 \
         && rm -rf /var/lib/apt/lists/*
 
-# Install the latest version of the Postgresql connector.
-# The Ubuntu version can occasionally fall out of date, so we add the apt repository,
-# per the postgresql docs: https://www.postgresql.org/download/linux/ubuntu/
-#RUN install -d /usr/share/postgresql-common/pgdg && \
-#    curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
-#    echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
-#    apt-get update && \
-#    apt -y install postgresql && \
-#    rm -f /etc/apt/sources.list.d/pgdg.list && \
-#    rm -rf /var/lib/apt/lists/*
 
 # Copy the wkhtmltopdf binary that we fetched in the wkhtmltox build step
 COPY --from=wkhtmltox /wkhtmltox/wkhtmltox.deb wkhtmltox.deb
@@ -295,14 +272,6 @@ RUN apt-get install -y --no-install-recommends ./wkhtmltox.deb \
 
 # Install our Javascript dependencies
 RUN npm install --force -g rtlcss@3.4.0
-
-# Copy the deb file we compiled from source to the current image
-#COPY --from=deb /output .
-
-# Install the Odoo .deb file we copied, and then remove it
-#RUN apt-get update &&  \
-#    apt-get -y install --no-install-recommends ./odoo.deb \
-#    && rm -rf /var/lib/apt/lists/* odoo.deb
 
 # Create the data locations used by default, and create a default empty configuration file at _generated.conf
 RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
@@ -333,7 +302,6 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Install some additional addons
 RUN pip install rlpycairo
 
-
 # Set the current directory to the Odoo folder.
 # This contains the source-code to Odoo
 WORKDIR /odoo
@@ -363,16 +331,28 @@ RUN ln -s /odoo/odoo-bin "/venv/lib/python${PYTHON_VERSION}/site-packages/odoo-b
 # Ubuntu is gid 1000, and should match most host machines
 USER ubuntu
 
-## Copy entrypoint + config
-COPY entrypoint.sh /
+# Copy the odoo config into the default location
 COPY odoo.conf /volumes/config/odoo.conf
+
+# Copy the entrypoint into the container.
+# The entry point is the script that runs when the Docker container is spun up
+COPY entrypoint.sh /
+
+# Copy the default hook setup script into the container. This script
+# is ran after the entrypoint has parsed all the environment variables and secrets
+# and generated the odoo configuration file but has not yet started Odoo.
+# This lets a developer hook into the pre-launch process
+# and have all the processed data at their disposal
+COPY hook_setup.sh /
+
+# The wait-for-psql script waits for Postgres to start accepting connections
+COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
 # Expose Odoo services
 EXPOSE 8069 8071 8072
 
-# Copy the wait-for-psql script
-COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
-
+# Set the work directory to the user's uploaded addons so if they SSH in they
+# will be greeted with their addons
 WORKDIR /volumes/addons
 
 # Get things started
