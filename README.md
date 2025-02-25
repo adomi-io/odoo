@@ -763,6 +763,7 @@ volumes:
 
 5. Click **OK**, then click the **Debug** button. You can now set breakpoints and debug your code.
 </details>
+
 ## Debugging the Generated Config
 
 The `odoo.conf` file is processed through `envsubst` and output to `/volumes/config/_generated.conf`. If you need to inspect the final configuration, simply mount the `/volumes/config` folder to your host.
