@@ -94,37 +94,79 @@ This Docker Compose file will launch a copy of Odoo along with a Postgres databa
 
 ```yaml
 version: '3.8'
+
 services:
   odoo:
     image: ghcr.io/adomi-io/odoo:18.0
     ports:
       - "8069:8069"
     environment:
-      ODOO_DB_HOST: ${ODOO_DB_HOST:-db}
-      ODOO_DB_PORT: ${ODOO_DB_PORT:-5432}
-      ODOO_DB_USER: ${ODOO_DB_USER:-odoo}
-      ODOO_DB_PASSWORD: ${ODOO_DB_PASSWORD:-odoo}
+      # Configure your instances
+      ODOO_DB_HOST: ${DB_HOST:-db}
+      ODOO_DB_PORT: ${DB_PORT:-5432}
+      ODOO_DB_USER: ${DB_USER:-odoo}
+      ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
     volumes:
-      - odoo_data:/volumes/data
+      # Mount your addons
       - ./addons:/volumes/addons
+      
+      # Persist Odoo Data
+      - odoo_data:/volumes/data
+      
+      # Mount a custom config
+      # - ./src/odoo.conf:/volumes/config/odoo.conf
+      
+      # Add enterprise
+      # - ./enterprise:/volumes/enterprise
     depends_on:
       - db
-
   db:
     image: postgres:13
     container_name: odoo_db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-odoo}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-test}
       POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
     volumes:
       - pg_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-
 volumes:
   odoo_data:
   pg_data:
+```
+
+Start your containers by running
+```shell
+docker compose up
+```
+
+If you want to always have Odoo running, you can add the following to your docker-compose.yml:
+
+```yml
+version: '3.8'
+
+services:
+  odoo:
+    image: ghcr.io/adomi-io/odoo:18.0
+    restart: always # or you can use unless-stopped 
+    # ...
+```
+
+then start the container in daemon mode by adding the `-d` flag
+
+```shell
+docker compose up -d
+```
+
+#### Logging into your container
+
+It is useful to log into your running containers. This is like ssh. 
+
+If you are using `docker compose` you can log into your running container with:
+
+```shell
+docker exec odoo /bin/bash
 ```
 
 ### Using secret files
@@ -247,20 +289,14 @@ RUN python myapp.py
 
 # Extending this image with Odoo Enterprise
 
-#### Odoo Partners
+### Odoo Partners
 Adding Odoo enterprise is easy. If you are an Odoo Partner, or have access to the GitHub,
-you can run `git clone git@github.com:odoo/enterprise.git`
+you can run `git clone git@github.com:odoo/enterprise.git` in your projects root
 
 Create a `Dockerfile` in your project with the following content:
 
 ```dockerfile
 FROM ghcr.io/adomi-io/odoo:18.0
-
-# If you have a default config, you can copy this file into the container
-# COPY odoo.conf /volumes/config/odoo.conf
-
-# Copy your code (assumed to be in ./addons) into the addons folder inside the container
-COPY ./addons /volumes/addons
 
 # Copy the Enterprise addons into the folder located at /volumes/enterprise
 COPY ./enterprise /volumes/enterprise
@@ -270,6 +306,31 @@ Build and run your container
 ```
 docker compose build && docker compose up
 ```
+
+### Downloaded Enterprise
+
+If you are not an Odoo partner, but have a valid enterprise license, you can download Enterprise here:
+
+### [Odoo Downloads](https://www.odoo.com/page/download)
+
+You want to download the Enterprise file from the "Sources" row.
+
+
+- Extract the downloaded file, and navigate to the `/odoo` directory.
+- Rename the `addons` folder to `enterprise`
+- Copy the `enterprise` folder you just renamed to the top level of your project.
+
+Run the following:
+
+```dockerfile
+FROM ghcr.io/adomi-io/odoo:18.0
+
+# Copy the Enterprise addons into the folder located at /volumes/enterprise
+COPY ./enterprise /volumes/enterprise
+```
+
+* Note: You can of course change the COPY command here to point to wherever your enterprise code is stored. Copying
+it to the enterprise folder is optional.
 
 
 # Configure your Odoo instances
@@ -527,7 +588,7 @@ ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
     IMAGE_ODOO_ENTERPRISE_LOCATION="/volumes/enterprise"
 ```
 
-## Setting default variables
+## Building default configuration into the image
 
 You can set the default value for the environment variables at build-time.
 
@@ -544,27 +605,29 @@ FROM ghcr.io/adomi-io/odoo:18.0
 COPY odoo.conf /volumes/config/odoo.conf
 
 # Set the default value for subsequent images. 
+# Specifying ODOO_WORKERS in env will now override this value
+# if ODOO_WORKERS does not exist, it will default to 5 
 ENV ODOO_WORKERS=5
-
-# Copy your code into the addons folder
-COPY . /volumes/addons
 ```
 
-## Adding New Environment Variables
+## Setup Hook
 
-To add a new configuration variable:
+When this image starts, it will process all of the environment variables and their defaults,
+and generate an `_generated.conf` configuration file.
 
-1. **Set the Variable:** Add it to your environment (e.g., in your Docker Compose file, ECS task definition, or
-   Kubernetes manifest).
-2. **Update the Configuration:** Insert a placeholder for it in `odoo.conf`. For instance, if you add `MY_CUSTOM_VAR`,
-   include:
-   ```ini
-   my_custom_setting = $MY_CUSTOM_VAR
-   ```
-3. **Deploy:** On container startup, the placeholder is replaced with the value from your environment.
+After all the environment variables have been parsed, and the `_generated.conf` file has been generated,
+but before Odoo is started, the entrypoint will invoke a file located at `/hook_setup.sh`.
+
+You can place any arbitrary bash you would like to be executed immediately prior to Odoo starting.
+
+Simply mount your script to `/hook_setup.sh`
+
+* Note: this script will execute even if you are using this container as a command-line utility (eg: `scaffold`).
+This script also runs prior to the `wait-for-psql` script, this does not guarantee that the database is reachable.
 
 # Development with this container
-You can use this container as a development environment.
+
+You can use this container as a development environment, and debug your code
 
 ## Docker Compose
 

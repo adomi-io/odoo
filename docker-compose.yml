@@ -7,15 +7,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8069:8069"
-      - "8071:8071"
-      - "8072:8072"
-    secrets:
-      - odoo_db_password
     environment:
       ODOO_DB_HOST: ${DB_HOST:-db}
       ODOO_DB_PORT: ${DB_PORT:-5432}
       ODOO_DB_USER: ${DB_USER:-odoo}
-#     ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
+      ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
     volumes:
       - ./src/odoo.conf:/volumes/config/odoo.conf
       - ./addons:/volumes/addons
@@ -35,12 +31,6 @@ services:
       - pg_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-
-secrets:
-  odoo_db_password:
-    file: odoo_db_password.txt
-
-
 volumes:
   odoo_data:
   pg_data:

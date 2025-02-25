@@ -316,9 +316,13 @@ if [ -d "IMAGE_SECRETS_DIR" ]; then
     done
 fi
 
+IMAGE_CONFIG_LOCATION="${IMAGE_CONFIG_LOCATION:-/volumes/config/odoo.conf}"
+
 # Substitute environment variables into the config file
-# and write them back to the Odoo config
-envsubst < /volumes/config/odoo.conf > "${ODOO_RC}"
+# and write them to the generated config file
+envsubst < "${IMAGE_CONFIG_LOCATION}" > "${ODOO_RC}"
+
+/hook_setup.sh
 
 case "$1" in
     -- | odoo)
@@ -337,7 +341,5 @@ case "$1" in
     *)
         exec "$@"
 esac
-
-echo "Closing"
 
 exit 1
