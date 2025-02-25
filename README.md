@@ -37,14 +37,6 @@ ensuring you always run the most up-to-date version for your specific Odoo relea
 - 🏗️ **Multi-Tenant Ready:** Built for SaaS and IaaS companies looking to support multiple Odoo tenants. Support any Odoo configuration option easily.
 - 🤝 **Community Driven:** Built and maintained by the community, ensuring continuous improvements and real-world usability.
 
-
-## Table of Contents
-
-- [Getting Started](#getting-started) 
-- [Run This Container](#run-this-container)
-  - [Docker](#docker)
-  - [Docker Compose](#docker-compose)
-
 ## Getting started
 
 Pull the latest nightly build for your version of Odoo (e.g., 18.0):
@@ -166,7 +158,7 @@ It is useful to log into your running containers. This is like ssh.
 If you are using `docker compose` you can log into your running container with:
 
 ```shell
-docker exec odoo /bin/bash
+docker compose exec odoo /bin/bash
 ```
 
 ### Using secret files
@@ -208,11 +200,6 @@ services:
       ODOO_DB_USER: ${DB_USER:-odoo}
       # We will load this from the secret file
       # ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
-    volumes:
-      - ./src/odoo.conf:/volumes/config/odoo.conf
-      - ./addons:/volumes/addons
-      - odoo_data:/volumes/data
-    # Add the secret to the container to mount it in the secrets folder
     secrets:
       - odoo_db_password
 
@@ -320,13 +307,18 @@ You want to download the Enterprise file from the "Sources" row.
 - Rename the `addons` folder to `enterprise`
 - Copy the `enterprise` folder you just renamed to the top level of your project.
 
-Run the following:
+Create a `Dockerfile` in your project with the following content:
 
 ```dockerfile
 FROM ghcr.io/adomi-io/odoo:18.0
 
 # Copy the Enterprise addons into the folder located at /volumes/enterprise
 COPY ./enterprise /volumes/enterprise
+```
+
+Build and run your container
+```
+docker compose build && docker compose up
 ```
 
 * Note: You can of course change the COPY command here to point to wherever your enterprise code is stored. Copying
