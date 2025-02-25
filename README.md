@@ -627,8 +627,13 @@ This script also runs prior to the `wait-for-psql` script, this does not guarant
 
 # Development with this container
 
-You can use this container as a development environment, and debug your code
+You can use this container as a development environment, and debug your code. This assumes you have the [PyCharm
+Odoo](https://plugins.jetbrains.com/plugin/13499-odoo) plugin by Trịnh Anh Ngọc. 
 
+If you dont already have it, consider it, its excellent!
+
+
+<details><summary>Use this container as a development environment w/ Breakpoints</summary>
 ## Docker Compose
 
 Follow the [Docker Compose](#docker-compose) setup. This will mount your `./addons`
@@ -638,7 +643,101 @@ Note for some changes to take effect, for example, UI changes, you will need to 
 
 You can use the `venv` inside the docker container for debugging and breakpoints inside of PyCharm
 
--- todo: Publishing the changes so we can work on this with a project in pycharm
+#### Considerations
+The debugging in PyCharm will directly use odoo-bin. This bypasses our entrypoint script. Its best to run the database
+in a different `docker-compose.yml` file
+
+Create a `docker-compose-db.yml` file which just contains the database:
+
+```yaml
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    container_name: odoo_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-test}
+      POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+volumes:
+  pg_data:
+```
+
+Start the database with `docker compose -f docker-compose-db.yml up`
+
+Create another file to run Odoo
+
+`docker-compose.yml`
+
+```yaml
+version: '3.8'
+
+services:
+  odoo:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    ports:
+      - "8069:8069"
+    environment:
+      ODOO_DB_HOST: ${DB_HOST:-db}
+      ODOO_DB_PORT: ${DB_PORT:-5432}
+      ODOO_DB_USER: ${DB_USER:-odoo}
+      ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
+    volumes:
+      - ./src/odoo.conf:/volumes/config/odoo.conf
+      - ./addons:/volumes/addons
+      - odoo_data:/volumes/data
+      # Uncomment this to add enterprise at run-time:
+      # - ./enterprise:/volumes/enterprise
+
+    # This will let the container talk to software running on the host machine
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+```
+
+#### Adding the venv as an interpreter 
+In PyCharm, go to `File -> Settings -> Project -> Python Interpreter`
+
+Click Add Interpreter, and select On Docker Compose 
+
+![dev_python_interpreter.png](./static/dev_python_interpreter.png)
+
+Select `odoo` as the service
+
+![dev_select_odoo.png](./static/dev_select_odoo.png)
+
+Select the Python interpreter located in the /venv folder
+
+![dev_select_venv.png](./static/dev_select_venv.png)
+
+and click `Create`
+
+#### Adding a debug configuration
+Click the targets and edit current configurations
+
+![dev_edit_configurations.png](./static/dev_edit_configurations.png)
+
+Click Add in the top left, and select an `Odoo` run configuration
+
+![dev_debug_config.png](./static/dev_debug_config.png)
+
+Set the interpreter to the one we just setup. The `odoo-bin` file is located at `/odoo/odoo-bin`
+
+Keep in mind this skips our `entrypoint.sh` file, and so we need to set the db_host, db_user, db_password, etc manually in
+the `odoo-bin` arguments or mount a hard-coded configuration file to `/volumes/config/_generated.conf` 
+if we want to change settings while debugging
+
+Add the path mapping to `./addons` -> `/volume/addons`
+
+Click Ok, and then the `Debug` button. You can now set breakpoints and debug your code
+</details>
 
 ## Debugging the generated config
 
