@@ -9,12 +9,6 @@ on:
       - "16.0"
       - "17.0"
       - "18.0"
-  pull_request:
-    branches:
-#      - "master"
-      - "16.0"
-      - "17.0"
-      - "18.0"
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
