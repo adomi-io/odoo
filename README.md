@@ -793,7 +793,7 @@ When Odoo launches a new version, they publish the changes on its own branch. Th
 
 When a new version is released, create a branch in this repository with the same name as the Odoo branch you wish to track.
 
-Then, add the branch name to the [docker-publish.yml](./.github/workflows/docker-publish.yml) file under the `push` and `pull_request` sections.
+Then, add the branch name to the [docker-publish.yml](./.github/workflows/docker-publish.yml) file under the `strategy/matrix/branch` section.
 
 The resulting image will be automatically built, unit-tested, deployed, and scheduled for nightly builds.
 
