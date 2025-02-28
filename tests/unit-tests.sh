@@ -3,7 +3,7 @@
 # Configuration options for this script
 export TESTS_DATABASE=${TESTS_DATABASE:-"testing"}
 export TESTS_ADDONS=${TESTS_ADDONS:-"all"}
-export TESTS_IMAGE_TAG=${TEST_IMAGE_TAG:-"testing-image"}
+export TESTS_IMAGE_TAG=${TESTS_IMAGE_TAG:-"testing-image"}
 export TESTS_DOCKERFILE=${TESTS_DOCKERFILE:-"Dockerfile"}
 export TESTS_WORKDIR=${TESTS_WORKDIR:-"../src"}
 
