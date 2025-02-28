@@ -1,7 +1,7 @@
 # Download the source code from a branch
 # You can get the related corrisponding enterprise and design-themes versions by running
 # from odoo import release; print(release.repos_heads)
-FROM --platform=$BUILDPLATFORM alpine AS source
+FROM --platform=$BUILDPLATFORM alpine AS SOURCE
 
 ARG ODOO_VERSION=18.0
 ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
@@ -21,7 +21,7 @@ RUN git clone  \
 
 # This build step will go download the latest version
 # of wkhtmltopdf (keep your eyes on https://github.com/odoo/paper-muncher)
-FROM --platform=$BUILDPLATFORM alpine/curl AS wkhtmltox
+FROM --platform=$BUILDPLATFORM alpine/curl AS WKHTMLTOX
 
 # Options to fetch WKHTMLTOPDF
 ARG WKHTMLTOPDF_VERSION=0.12.6.1-3.jammy
@@ -53,7 +53,7 @@ RUN if [ -z "${TARGETARCH}" ]; then \
 # This will download the latest version of the
 # MaxMind GeoLite2 country, city, and ASN databases
 # which is used for IP Address geolocation
-FROM --platform=$BUILDPLATFORM alpine AS geolite
+FROM --platform=$BUILDPLATFORM alpine AS GEOLITE
 
 ARG GEOLITE_GITHUB_REPOSITORY=P3TERX/GeoLite.mmdb
 
@@ -67,48 +67,6 @@ RUN urls=$(curl -s https://api.github.com/repos/${GEOLITE_GITHUB_REPOSITORY}/rel
       echo "Downloading $url..."; \
       curl -L "$url" -o "$(basename "$url")"; \
     done
-
-#This build step will compile the Odoo source code into a .deb file
-FROM --platform=$BUILDPLATFORM ubuntu:noble AS deb
-
-# Install necessary build tools and dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        build-essential \
-        devscripts \
-        debhelper \
-        python3 \
-        python3-dev \
-        python3-pip \
-        libxml2-dev \
-        libxslt1-dev \
-        libldap2-dev \
-        libsasl2-dev \
-        libffi-dev \
-        wget \
-        dh-python \
-        python3-asn1crypto \
-        rsync \
-        ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
-
-# Set our initial directory to /build/src.
-# When we build our .deb, the resulting
-# build will be moved one directory higher
-WORKDIR /build/src
-
-# Copy the source code from the source-fetching image
-COPY --from=source /source/odoo .
-
-# Compile the Odoo .deb file
-RUN dpkg-buildpackage -us -uc
-
-# dpkg-buildpackage will produce files with some crazy names.
-# This will grab whatever .deb file was output and move it to the
-# /output directory, renaming it to odoo.deb for other build-steps to pick up
-RUN mkdir /output && \
-    mv /build/odoo*.deb /output/odoo.deb
-
 
 # This is the final output, and is the container that will run our code
 FROM --platform=$TARGETPLATFORM ubuntu:noble
@@ -265,7 +223,7 @@ RUN apt-get update && \
 
 
 # Copy the wkhtmltopdf binary that we fetched in the wkhtmltox build step
-COPY --from=wkhtmltox /wkhtmltox/wkhtmltox.deb wkhtmltox.deb
+COPY --from=WKHTMLTOX /wkhtmltox/wkhtmltox.deb wkhtmltox.deb
 
 # Install the wkhtmltox.deb file we just copied, and then delete it
 RUN apt-get install -y --no-install-recommends ./wkhtmltox.deb \
@@ -294,7 +252,7 @@ RUN virtualenv -p "python${PYTHON_VERSION}" /venv
 ENV PATH="/venv/bin:$PATH"
 
 # Copy the requirements.txt
-COPY --from=source /source/odoo/requirements.txt requirements.txt
+COPY --from=SOURCE /source/odoo/requirements.txt requirements.txt
 
 # Install the Odoo requirements
 RUN pip install --no-cache-dir --upgrade pip \
@@ -308,7 +266,7 @@ RUN pip install rlpycairo
 WORKDIR /odoo
 
 # Copy the code from the source-fetching container and copy it into the Odoo folder
-COPY --from=source /source/odoo/ .
+COPY --from=SOURCE /source/odoo/ .
 
 # Install Odoo into the venv
 RUN pip install --no-cache-dir .
