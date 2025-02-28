@@ -50,7 +50,7 @@ jobs:
     needs: build-and-test
     strategy:
       matrix:
-        branch: [ "16.0", "17.0", "18.0" ]
+        branch: [ "17.0", "18.0" ]
     permissions:
       contents: read
       packages: write
@@ -88,7 +88,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./src
-          platforms: linux/amd64,linux/arm64,linux/ppc64el
+          platforms: linux/amd64,linux/arm64/v8,linux/ppc64el
           build-args: |
             ODOO_VERSION=${{ matrix.branch }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}

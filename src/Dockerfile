@@ -21,7 +21,7 @@ RUN git clone  \
 
 # This build step will go download the latest version
 # of wkhtmltopdf (keep your eyes on https://github.com/odoo/paper-muncher)
-FROM alpine/curl as wkhtmltox
+FROM alpine/curl AS wkhtmltox
 
 # Options to fetch WKHTMLTOPDF
 ARG WKHTMLTOPDF_VERSION=0.12.6.1-3.jammy
@@ -44,7 +44,7 @@ RUN if [ -z "${TARGETARCH}" ]; then \
     WKHTMLTOPDF_ARCH=${TARGETARCH} && \
     case ${TARGETARCH} in \
     "amd64") WKHTMLTOPDF_ARCH=amd64 && WKHTMLTOPDF_SHA=$WKHTMLTOPDF_AMD64_SHA  ;; \
-    "arm64")  WKHTMLTOPDF_SHA=$WKHTMLTOPDF_ARM64_SHA  ;; \
+    "arm64" | "linux/arm64/v8") WKHTMLTOPDF_ARCH="arm64" WKHTMLTOPDF_SHA=$WKHTMLTOPDF_ARM64_SHA  ;; \
     "ppc64le" | "ppc64el") WKHTMLTOPDF_ARCH=ppc64el && WKHTMLTOPDF_SHA=$WKHTMLTOPDF_PPC64EL_SHA  ;; \
     esac \
     && curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_${WKHTMLTOPDF_VERSION}_${WKHTMLTOPDF_ARCH}.deb \
@@ -53,7 +53,7 @@ RUN if [ -z "${TARGETARCH}" ]; then \
 # This will download the latest version of the
 # MaxMind GeoLite2 country, city, and ASN databases
 # which is used for IP Address geolocation
-FROM alpine as geolite
+FROM alpine AS geolite
 
 ARG GEOLITE_GITHUB_REPOSITORY=P3TERX/GeoLite.mmdb
 
@@ -69,7 +69,7 @@ RUN urls=$(curl -s https://api.github.com/repos/${GEOLITE_GITHUB_REPOSITORY}/rel
     done
 
 #This build step will compile the Odoo source code into a .deb file
-FROM ubuntu:noble as deb
+FROM ubuntu:noble AS deb
 
 # Install necessary build tools and dependencies
 RUN apt-get update && \
