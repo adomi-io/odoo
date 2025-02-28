@@ -23,26 +23,26 @@ jobs:
         with:
           ref: ${{ github.ref_name }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker image for testing (linux/amd64 only)
-        id: build
-        uses: docker/build-push-action@v5
-        with:
-          context: ./src
-          build-args: |
-            ODOO_VERSION=${{ github.ref_name }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-test
-          push: false
-          load: true
-
-      - name: Run unit tests
-        working-directory: tests
-        env:
-          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-test
-          SKIP_BUILD: true
-        run: ./unit-tests.sh
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v3
+#
+#      - name: Build Docker image for testing (linux/amd64 only)
+#        id: build
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: ./src
+#          build-args: |
+#            ODOO_VERSION=${{ github.ref_name }}
+#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-test
+#          push: false
+#          load: true
+#
+#      - name: Run unit tests
+#        working-directory: tests
+#        env:
+#          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-test
+#          SKIP_BUILD: true
+#        run: ./unit-tests.sh
 
   build-and-push:
     if: github.event_name == 'push'

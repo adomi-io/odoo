@@ -1,7 +1,7 @@
 # Download the source code from a branch
 # You can get the related corrisponding enterprise and design-themes versions by running
 # from odoo import release; print(release.repos_heads)
-FROM alpine AS source
+FROM --platform=$BUILDPLATFORM alpine AS source
 
 ARG ODOO_VERSION=18.0
 ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
@@ -21,7 +21,7 @@ RUN git clone  \
 
 # This build step will go download the latest version
 # of wkhtmltopdf (keep your eyes on https://github.com/odoo/paper-muncher)
-FROM alpine/curl AS wkhtmltox
+FROM --platform=$BUILDPLATFORM alpine/curl AS wkhtmltox
 
 # Options to fetch WKHTMLTOPDF
 ARG WKHTMLTOPDF_VERSION=0.12.6.1-3.jammy
@@ -53,7 +53,7 @@ RUN if [ -z "${TARGETARCH}" ]; then \
 # This will download the latest version of the
 # MaxMind GeoLite2 country, city, and ASN databases
 # which is used for IP Address geolocation
-FROM alpine AS geolite
+FROM --platform=$BUILDPLATFORM alpine AS geolite
 
 ARG GEOLITE_GITHUB_REPOSITORY=P3TERX/GeoLite.mmdb
 
@@ -69,7 +69,7 @@ RUN urls=$(curl -s https://api.github.com/repos/${GEOLITE_GITHUB_REPOSITORY}/rel
     done
 
 #This build step will compile the Odoo source code into a .deb file
-FROM ubuntu:noble AS deb
+FROM --platform=$BUILDPLATFORM ubuntu:noble AS deb
 
 # Install necessary build tools and dependencies
 RUN apt-get update && \
@@ -111,7 +111,7 @@ RUN mkdir /output && \
 
 
 # This is the final output, and is the container that will run our code
-FROM ubuntu:noble
+FROM --platform=$TARGETPLATFORM ubuntu:noble
 
 # Docker labels
 LABEL source="Odoo" \
