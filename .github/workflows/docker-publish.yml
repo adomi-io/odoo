@@ -56,16 +56,29 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      # Build and push Docker image with Buildx (don't push on PR)
+      # Build the Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@v5
         with:
           context: ./src
-          push: ${{ github.event_name != 'pull_request' }}
+          push: false
+          load: true
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: | 
             ODOO_VERSION=${{ github.ref_name }}
+
+      - name: Run unit tests
+        working-directory: tests
+        env:
+          TESTS_IMAGE_TAG: ${{ steps.meta.outputs.tags }}
+          SKIP_BUILD: true
+        run: ./unit-tests.sh
+
+      - name: Push Docker image
+        if: success() && github.event_name != 'pull_request'
+        run: |
+          docker push ${{ steps.meta.outputs.tags }}

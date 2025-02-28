@@ -17,7 +17,7 @@ services:
       - ./addons:/volumes/addons
       - odoo_data:/volumes/data
       # Uncomment this to add enterprise at run-time:
-      - ./enterprise:/volumes/enterprise
+      # - ./enterprise:/volumes/enterprise
     depends_on:
       - db
   db:

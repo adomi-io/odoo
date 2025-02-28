@@ -298,6 +298,17 @@ if [ -d "${IMAGE_ODOO_ENTERPRISE_LOCATION}" ]; then
     fi
 fi
 
+# If the enterprise folder exists, add it to the ODOO_ADDONS_PATH
+if [ -d "${IMAGE_ADDITIONAL_ADDONS_LOCATION}" ]; then
+    echo "Additional addons have been detected"
+
+    if [ -z "$ODOO_ADDONS_PATH" ]; then
+        export ODOO_ADDONS_PATH="$IMAGE_ADDITIONAL_ADDONS_LOCATION"
+    else
+        export ODOO_ADDONS_PATH="$ODOO_ADDONS_PATH,$IMAGE_ADDITIONAL_ADDONS_LOCATION"
+    fi
+fi
+
 # Set the secrets directory from the environment variable IMAGE_SECRETS_DIR (defaulting to /run/secrets)
 IMAGE_SECRETS_DIR="${IMAGE_SECRETS_DIR:-/run/secrets}"
 
@@ -315,8 +326,6 @@ if [ -d "$IMAGE_SECRETS_DIR" ]; then
         export "${env_var}=$(< "$secret")"
     done
 fi
-
-echo "TEST SECRET: ${TEST_SECRET}"
 
 IMAGE_CONFIG_LOCATION="${IMAGE_CONFIG_LOCATION:-/volumes/config/odoo.conf}"
 
