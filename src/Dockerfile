@@ -227,7 +227,8 @@ ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
     ODOO_LIMIT_TIME_REAL_CRON="-1" \
     ODOO_LIMIT_REQUEST="65536" \
     IMAGE_SECRETS_DIR="/run/secrets" \
-    IMAGE_ODOO_ENTERPRISE_LOCATION="/volumes/enterprise"
+    IMAGE_ODOO_ENTERPRISE_LOCATION="/volumes/enterprise" \
+    IMAGE_ADDITIONAL_ADDONS_LOCATION="/volumes/additional_addons"
 
 # Install Odoo dependencies and system packages
 RUN apt-get update && \

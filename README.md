@@ -825,12 +825,6 @@ Finally, run the unit test script:
 ./tests/unit-tests.sh
 ```
 
-### Front End Testing & Tours
-
-Front end testing and tours are not currently finished.
-
-
-
 # License
 
 For license details, see the [LICENSE](https://github.com/adomi-io/odoo/blob/master/LICENSE) file in the repository.

@@ -16,20 +16,24 @@ export TESTS_DB_USER=${TESTS_DB_USER:-"odoo"}
 export TESTS_DB_PASSWORD=${TESTS_DB_PASSWORD:-"odoo"}
 export TESTS_DB_NAME=${TESTS_DB_NAME:-"testing"}
 export TESTS_TEST_TAGS=${TESTS_TEST_TAGS:-"-/base:TestRealCursor.test_connection_readonly"}
+export TESTS_SKIP_BUILD=${TESTS_SKIP_BUILD:-"true"}
 
 # Ensure we do not have a lingering odoo_testing_db
 docker rm -f "${TESTS_POSTGRES_CONTAINER_NAME}" 2>/dev/null || true
 
-# Build the testing image
-docker build -t "${TESTS_IMAGE_TAG}" -f "${TESTS_WORKDIR}/${TESTS_DOCKERFILE}" "${TESTS_WORKDIR}"
+# Optionally skip building the image
+if [ "${SKIP_BUILD}" != "true" ]; then
+  # Build the testing image
+  docker build -t "${TESTS_IMAGE_TAG}" -f "${TESTS_WORKDIR}/${TESTS_DOCKERFILE}" "${TESTS_WORKDIR}"
 
-# Capture the last status code
-BUILD_EXIT_CODE=$?
+  BUILD_EXIT_CODE=$?
 
-# Exit if we did not build successfully
-if [ $BUILD_EXIT_CODE -ne 0 ]; then
-  echo "Build failed (exit code $BUILD_EXIT_CODE)"
-  exit $BUILD_EXIT_CODE
+  if [ $BUILD_EXIT_CODE -ne 0 ]; then
+    echo "Build failed (exit code $BUILD_EXIT_CODE)"
+    exit $BUILD_EXIT_CODE
+  fi
+else
+  echo "Skipping image build as SKIP_BUILD is set to true."
 fi
 
 
@@ -65,7 +69,7 @@ docker run \
   -e ODOO_DB_PORT="${TESTS_DB_PORT:-5432}" \
   -e ODOO_DB_USER="${DB_USER:-odoo}" \
   -e ODOO_DB_PASSWORD="${DB_PASSWORD:-odoo}" \
-  -e ODOO_ADDONS_PATH="${ODOO_ADDONS_PATH:-/odoo/addons}" \
+  -e ODOO_ADDONS_PATH="${TESTS_ADDONS_PATH:-/odoo/addons}" \
   --rm "${TESTS_IMAGE_TAG}" \
   --database "${TESTS_DATABASE}" \
   --init "${TESTS_ADDONS}" \
@@ -78,8 +82,7 @@ docker run \
 TEST_EXIT_CODE=$?
 
 # Cleanup our mess
-docker stop odoo_testing_db && \
-docker rm odoo_testing_db
+docker stop odoo_testing_db
 
 # Print our result and return the test status if
 # the status code does not equal 0
