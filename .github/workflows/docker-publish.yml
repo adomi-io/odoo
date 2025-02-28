@@ -75,7 +75,12 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./src
-          platforms: linux/amd64,linux/arm64
+          # There is not much demand right now for arm64 builds.
+          # If you would like to enable them, simply replace the platform
+          # lines with the following. Note that it takes about 2 hours to build
+          # the package for arm64 and amd64
+          # platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           build-args: |
             ODOO_VERSION=${{ matrix.branch }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}
