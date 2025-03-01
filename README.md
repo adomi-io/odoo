@@ -114,6 +114,9 @@ services:
       
       # Add enterprise
       # - ./enterprise:/volumes/enterprise
+        
+      # Add additional addons like OCA packages or sub-modules
+      # - ./sub-modules:/volumes/additional_addons
     depends_on:
       - db
   db:
@@ -259,6 +262,7 @@ secrets:
 ```
 
 This method keeps your secrets out of your code and environment, making your deployments more secure and flexible.
+
 # Extending This Image
 
 This image is built on Ubuntu, making it easy to extend. Customize your own image by setting default environment variables, baking your Odoo config, and adding your custom addons. You can even pre-build a container with Odoo Enterprise.
@@ -369,6 +373,20 @@ docker compose build && docker compose up
 ```
 
 *Note: Feel free to adjust the `COPY` command if your Enterprise code is stored elsewhere—placing it in the `enterprise` folder is just one option.*
+
+## Extra Addons
+
+You may have extra addons which you just want to use, not develop for. Rather than force you to put external packages or submodules
+in your `addons` folder, which can get overwhelming in larger projects, this container has an optional volume at `/volumes/additional_addons`.
+
+If there is a directory loaded to `/volumes/additional_addons`, the entrypoint script will automatically add it to the Odoo addons path.
+
+```dockerfile
+FROM ghcr.io/adomi-io/odoo:18.0
+
+# Copy your submodules and external addons into the folder located at /volumes/extra_addons
+COPY ./oca/addons /volumes/extra_addons
+```
 
 # Configure Your Odoo Instances
 
