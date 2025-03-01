@@ -8,6 +8,8 @@ on:
     branches:
       - "17.0"
       - "18.0"
+    paths-ignore:
+      - 'README.md'
 
 env:
   REGISTRY: ghcr.io
