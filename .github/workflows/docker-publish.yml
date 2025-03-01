@@ -39,23 +39,23 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-#      - name: Build Docker image for testing
-#        id: build
-#        uses: docker/build-push-action@v5
-#        with:
-#          context: ./src
-#          build-args: |
-#            ODOO_VERSION=${{ matrix.branch }}
-#          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-test
-#          push: false
-#          load: true
-#
-#      - name: Run unit tests
-#        working-directory: tests
-#        env:
-#          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-test
-#          SKIP_BUILD: true
-#        run: ./unit-tests.sh
+      - name: Build Docker image for testing
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src
+          build-args: |
+            ODOO_VERSION=${{ matrix.branch }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-test
+          push: false
+          load: true
+
+      - name: Run unit tests
+        working-directory: tests
+        env:
+          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-test
+          SKIP_BUILD: true
+        run: ./unit-tests.sh
 
       - name: Log into registry
         if: github.event_name != 'pull_request'
