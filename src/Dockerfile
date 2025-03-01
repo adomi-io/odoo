@@ -73,13 +73,13 @@ RUN urls=$(curl -s https://api.github.com/repos/${GEOLITE_GITHUB_REPOSITORY}/rel
 FROM ubuntu:noble
 
 # Docker labels
-LABEL source="Odoo" \
-      maintainer="Adomi Software, LLC <github@adomisoftware.com>" \
+LABEL maintainer="Adomi Software, LLC <github@adomisoftware.com>" \
       uploaders="Adomi Software, LLC <github@adomisoftware.com>" \
       homepage="https://www.github.com/adomi-io/odoo" \
       vcs_git="https://www.github.com/adomi-io/odoo" \
       vcs_browser="https://www.github.com/adomi-io/odoo" \
-      org.opencontainers.image.source = "https://github.com/adomi-io/odoo"
+      source="https://github.com/adomi-io/odoo" \
+      description="Adomi-IO Odoo"
 
 # # Use /bin/bash with debugging (-x) and fail on pipeline errors (-o pipefail) for subsequent commands
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
