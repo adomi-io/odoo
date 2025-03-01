@@ -83,7 +83,7 @@ jobs:
           platforms: linux/amd64
           build-args: |
             ODOO_VERSION=${{ matrix.branch }}
-          tags: ${{ steps.tag-list.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
