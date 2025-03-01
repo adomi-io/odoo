@@ -299,13 +299,13 @@ if [ -d "${IMAGE_ODOO_ENTERPRISE_LOCATION}" ]; then
 fi
 
 # If the enterprise folder exists, add it to the ODOO_ADDONS_PATH
-if [ -d "${IMAGE_ADDITIONAL_ADDONS_LOCATION}" ]; then
+if [ -d "${IMAGE_EXTRA_ADDONS_LOCATION}" ]; then
     echo "Additional addons have been detected"
 
     if [ -z "$ODOO_ADDONS_PATH" ]; then
-        export ODOO_ADDONS_PATH="$IMAGE_ADDITIONAL_ADDONS_LOCATION"
+        export ODOO_ADDONS_PATH="$IMAGE_EXTRA_ADDONS_LOCATION"
     else
-        export ODOO_ADDONS_PATH="$ODOO_ADDONS_PATH,$IMAGE_ADDITIONAL_ADDONS_LOCATION"
+        export ODOO_ADDONS_PATH="$ODOO_ADDONS_PATH,$IMAGE_EXTRA_ADDONS_LOCATION"
     fi
 fi
 

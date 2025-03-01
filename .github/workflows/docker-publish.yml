@@ -1,60 +1,33 @@
 name: Docker
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '38 3 * * *'
   push:
     branches:
       - "17.0"
       - "18.0"
+    paths:
+      - '**'
+      - '!README.md'
 
 env:
   REGISTRY: ghcr.io
+  REGISTRY_USERNAME: ${{ github.actor }}
+  REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository on current branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker image for testing (linux/amd64 only)
-        id: build
-        uses: docker/build-push-action@v5
-        with:
-          context: ./src
-          build-args: |
-            ODOO_VERSION=${{ github.ref_name }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-test
-          push: false
-          load: true
-
-      - name: Run unit tests
-        working-directory: tests
-        env:
-          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-test
-          SKIP_BUILD: true
-        run: ./unit-tests.sh
-
   build-and-push:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    needs: build-and-test
     strategy:
       matrix:
-        branch: [ "17.0", "18.0" ]
+        branch: [ "18.0", "17.0" ]
+      fail-fast: false
     permissions:
       contents: read
       packages: write
-      id-token: write
     steps:
       - name: Checkout repository on branch ${{ matrix.branch }}
         uses: actions/checkout@v4
@@ -69,29 +42,53 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log into registry ${{ env.REGISTRY }}
+      - name: Build Docker image for testing
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src
+          build-args: |
+            ODOO_VERSION=${{ matrix.branch }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-test
+          push: false
+          load: true
+
+      - name: Run unit tests
+        working-directory: tests
+        env:
+          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-test
+          SKIP_BUILD: true
+        run: ./unit-tests.sh
+
+      - name: Log into registry
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ env.REGISTRY_USERNAME}}
+          password: ${{ env.REGISTRY_PASSWORD }}
 
       - name: Extract Docker metadata
+        if: github.event_name != 'pull_request'
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags:
+            type=raw,value=latest,enable=${{ matrix.branch  == format('refs/heads/{0}', github.event.repository.default_branch) }}
+            type=raw,value=${{ matrix.branch }},enable=true
 
       - name: Build and push multi-arch Docker image
+        if: github.event_name != 'pull_request'
         id: build-and-push
         uses: docker/build-push-action@v5
         with:
           context: ./src
-          platforms: linux/amd64,linux/arm64/v8,linux/ppc64el
+          platforms: linux/amd64
           build-args: |
             ODOO_VERSION=${{ matrix.branch }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
