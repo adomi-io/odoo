@@ -54,7 +54,7 @@ jobs:
           SKIP_BUILD: true
         run: ./unit-tests.sh
 
-      - name: Log into registry ${{ env.REGISTRY }}
+      - name: Log into registry
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
