@@ -78,7 +78,8 @@ LABEL source="Odoo" \
       uploaders="Adomi Software, LLC <github@adomisoftware.com>" \
       homepage="https://www.github.com/adomi-io/odoo" \
       vcs_git="https://www.github.com/adomi-io/odoo" \
-      vcs_browser="https://www.github.com/adomi-io/odoo"
+      vcs_browser="https://www.github.com/adomi-io/odoo" \
+      org.opencontainers.image.source = "https://github.com/adomi-io/odoo"
 
 # # Use /bin/bash with debugging (-x) and fail on pipeline errors (-o pipefail) for subsequent commands
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
