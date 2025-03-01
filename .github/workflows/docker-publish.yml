@@ -82,7 +82,7 @@ jobs:
           build-args: |
             ODOO_VERSION=${{ matrix.branch }}
           tags: |
-            ${{format('{0}/{1}:{2}', env.REGISTRY, env.IMAGE_NAME, matrix.branch) }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}
             ${{ matrix.branch == '18.0' && format('{0}/{1}:latest', env.REGISTRY, env.IMAGE_NAME) }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
