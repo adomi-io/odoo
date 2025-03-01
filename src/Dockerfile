@@ -70,16 +70,7 @@ RUN urls=$(curl -s https://api.github.com/repos/${GEOLITE_GITHUB_REPOSITORY}/rel
 
 
 # This is the final output, and is the container that will run our code
-FROM ubuntu:noble
-
-# Docker labels
-LABEL maintainer="Adomi Software, LLC <github@adomisoftware.com>" \
-      uploaders="Adomi Software, LLC <github@adomisoftware.com>" \
-      homepage="https://www.github.com/adomi-io/odoo" \
-      vcs_git="https://www.github.com/adomi-io/odoo" \
-      vcs_browser="https://www.github.com/adomi-io/odoo" \
-      source="https://github.com/adomi-io/odoo" \
-      description="Adomi-IO Odoo"
+FROM ubuntu:noble AS setup
 
 # # Use /bin/bash with debugging (-x) and fail on pipeline errors (-o pipefail) for subsequent commands
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
@@ -106,6 +97,98 @@ ENV NODE_PATH=/usr/lib/node_modules/
 # This will allow user-wide installation of packages
 # This flag is used by npm and yarn
 ENV npm_config_prefix=/usr
+
+# Install Odoo dependencies and system packages
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        curl \
+        dirmngr \
+        fonts-noto-cjk \
+        gnupg \
+        libssl-dev \
+        node-less \
+        npm \
+        libpq-dev \
+        python3-dev \
+        python3-virtualenv \
+        libldap2-dev \
+        libsasl2-dev \
+        xz-utils \
+        fontconfig \
+        xfonts-75dpi \
+        xfonts-base \
+        libjpeg-turbo8 \
+        libx11-6 \
+        libxcb1 \
+        libxext6 \
+        libxrender1 \
+        gettext  \
+        postgresql-client \
+        libcairo2-dev \
+        libcairo2 \
+        && rm -rf /var/lib/apt/lists/*
+
+# Copy the wkhtmltopdf binary that we fetched in the wkhtmltox build step
+COPY --from=wkhtmltox /wkhtmltox/wkhtmltox.deb wkhtmltox.deb
+
+# Install the wkhtmltox.deb file we just copied, and then delete it
+RUN apt-get install -y --no-install-recommends ./wkhtmltox.deb \
+    && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
+
+# Install our Javascript dependencies
+RUN npm install --force -g rtlcss@3.4.0
+
+# Create the data locations used by default, and create a default empty configuration file at _generated.conf
+RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
+    && echo "[options]" > /volumes/config/_generated.conf
+
+# Set the owner to user:group ubuntu:ubuntu
+RUN chown -R ubuntu:ubuntu /volumes
+
+# Expose the volumes to allow users to mount these folders directly
+VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
+
+# The /venv folder will house our Python virtual environment
+WORKDIR /venv
+
+# Create a virtualenv to install Odoo into
+RUN virtualenv -p "python${PYTHON_VERSION}" /venv
+
+# Set the virtualenv to be the system default
+ENV PATH="/venv/bin:$PATH"
+
+# Copy the requirements.txt
+COPY --from=source /source/odoo/requirements.txt requirements.txt
+
+# Install the Odoo requirements
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Install some additional addons
+RUN pip install rlpycairo
+
+# Odoo's unit tests check to ensure that addons are located at
+# /usr/lib/python3/dist-packages/addons.
+# This is not setup automatically and must be created for unit tests to pass
+RUN mkdir -p "/venv/lib/python${PYTHON_VERSION}/site-packages/addons"
+
+# This is the final container that will run the Odoo process
+FROM setup
+
+# Docker labels
+LABEL maintainer="Adomi Software, LLC <github@adomisoftware.com>" \
+      uploaders="Adomi Software, LLC <github@adomisoftware.com>" \
+      homepage="https://www.github.com/adomi-io/odoo" \
+      vcs_git="https://www.github.com/adomi-io/odoo" \
+      vcs_browser="https://www.github.com/adomi-io/odoo" \
+      source="https://github.com/adomi-io/odoo" \
+      description="Adomi-io - Odoo"
+
+# # Use /bin/bash with debugging (-x) and fail on pipeline errors (-o pipefail) for subsequent commands
+SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 
 # Odoo-specific configuration options
 # If you set these, these values are baked into the container.
@@ -188,80 +271,7 @@ ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
     ODOO_LIMIT_REQUEST="65536" \
     IMAGE_SECRETS_DIR="/run/secrets" \
     IMAGE_ODOO_ENTERPRISE_LOCATION="/volumes/enterprise" \
-    IMAGE_ADDITIONAL_ADDONS_LOCATION="/volumes/additional_addons"
-
-# Install Odoo dependencies and system packages
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive \
-    apt-get install -y --no-install-recommends \
-        build-essential \
-        ca-certificates \
-        curl \
-        dirmngr \
-        fonts-noto-cjk \
-        gnupg \
-        libssl-dev \
-        node-less \
-        npm \
-        libpq-dev \
-        python3-dev \
-        python3-virtualenv \
-        libldap2-dev \
-        libsasl2-dev \
-        xz-utils \
-        fontconfig \
-        xfonts-75dpi \
-        xfonts-base \
-        libjpeg-turbo8 \
-        libx11-6 \
-        libxcb1 \
-        libxext6 \
-        libxrender1 \
-        gettext  \
-        postgresql-client \
-        libcairo2-dev \
-        libcairo2 \
-        && rm -rf /var/lib/apt/lists/*
-
-
-# Copy the wkhtmltopdf binary that we fetched in the wkhtmltox build step
-COPY --from=wkhtmltox /wkhtmltox/wkhtmltox.deb wkhtmltox.deb
-
-# Install the wkhtmltox.deb file we just copied, and then delete it
-RUN apt-get install -y --no-install-recommends ./wkhtmltox.deb \
-    && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
-
-# Install our Javascript dependencies
-RUN npm install --force -g rtlcss@3.4.0
-
-# Create the data locations used by default, and create a default empty configuration file at _generated.conf
-RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
-    && echo "[options]" > /volumes/config/_generated.conf
-
-# Set the owner to user:group ubuntu:ubuntu
-RUN chown -R ubuntu:ubuntu /volumes
-
-# Expose the volumes to allow users to mount these folders directly
-VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
-
-# The /venv folder will house our Python virtual environment
-WORKDIR /venv
-
-# Create a virtualenv to install Odoo into
-RUN virtualenv -p "python${PYTHON_VERSION}" /venv
-
-# Set the virtualenv to be the system default
-ENV PATH="/venv/bin:$PATH"
-
-# Copy the requirements.txt
-COPY --from=source /source/odoo/requirements.txt requirements.txt
-
-# Install the Odoo requirements
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
-
-# Install some additional addons
-RUN pip install rlpycairo
+    IMAGE_EXTRA_ADDONS_LOCATION="/volumes/extra_addons"
 
 # Set the current directory to the Odoo folder.
 # This contains the source-code to Odoo
@@ -272,11 +282,6 @@ COPY --from=source /source/odoo/ .
 
 # Install Odoo into the venv
 RUN pip install --no-cache-dir .
-
-# Odoo's unit tests check to ensure that addons are located at
-# /usr/lib/python3/dist-packages/addons.
-# This is not setup automatically and must be created for unit tests to pass
-RUN mkdir -p "/venv/lib/python${PYTHON_VERSION}/site-packages/addons"
 
 # When Odoo is installed, it is installed into the odoo dist package:
 # /venv/lib/python3/site-packages/odoo.
@@ -312,9 +317,8 @@ COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 # Expose Odoo services
 EXPOSE 8069 8071 8072
 
-# Set the work directory to the user's uploaded addons so if they SSH in they
-# will be greeted with their addons
-WORKDIR /volumes/addons
+# Set the work directory to volumes directory where all of our Odoo data is stored
+WORKDIR /volumes
 
 # Get things started
 ENTRYPOINT ["/entrypoint.sh"]

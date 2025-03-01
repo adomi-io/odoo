@@ -116,7 +116,7 @@ services:
       # - ./enterprise:/volumes/enterprise
         
       # Add additional addons like OCA packages or sub-modules
-      # - ./sub-modules:/volumes/additional_addons
+      # - ./sub-modules:/volumes/extra_addons
     depends_on:
       - db
   db:
@@ -377,9 +377,9 @@ docker compose build && docker compose up
 ## Extra Addons
 
 You may have extra addons which you just want to use, not develop for. Rather than force you to put external packages or submodules
-in your `addons` folder, which can get overwhelming in larger projects, this container has an optional volume at `/volumes/additional_addons`.
+in your `addons` folder, which can get overwhelming in larger projects, this container has an optional volume at `/volumes/extra_addons`.
 
-If there is a directory loaded to `/volumes/additional_addons`, the entrypoint script will automatically add it to the Odoo addons path.
+If there is a directory loaded to `/volumes/extra_addons`, the entrypoint script will automatically add it to the Odoo addons path.
 
 ```dockerfile
 FROM ghcr.io/adomi-io/odoo:18.0
