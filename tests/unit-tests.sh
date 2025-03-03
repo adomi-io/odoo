@@ -7,7 +7,7 @@ export TESTS_IMAGE_TAG=${TESTS_IMAGE_TAG:-"testing-image"}
 export TESTS_DOCKERFILE=${TESTS_DOCKERFILE:-"Dockerfile"}
 export TESTS_WORKDIR=${TESTS_WORKDIR:-"../src"}
 
-export TESTS_POSTGRES_IMAGE=${TESTS_POSTGRES_SERVER_VERSION:-"postgres:13"}
+export TESTS_POSTGRES_IMAGE=${TESTS_POSTGRES_SERVER_VERSION:-"postgres:17-alpine"}
 export TESTS_ODOO_CONTAINER_NAME=${TESTS_ODOO_CONTAINER_NAME:-"odoo_testing_container"}
 export TESTS_POSTGRES_CONTAINER_NAME=${TESTS_POSTGRES_CONTAINER_NAME:-"${TESTS_ODOO_CONTAINER_NAME}_db"}
 
@@ -15,8 +15,9 @@ export TESTS_DB_HOST=${TESTS_DB_HOST:-"${TESTS_POSTGRES_CONTAINER_NAME}"}
 export TESTS_DB_USER=${TESTS_DB_USER:-"odoo"}
 export TESTS_DB_PASSWORD=${TESTS_DB_PASSWORD:-"odoo"}
 export TESTS_DB_NAME=${TESTS_DB_NAME:-"testing"}
-export TESTS_TEST_TAGS=${TESTS_TEST_TAGS:-"-/base:TestRealCursor.test_connection_readonly,-/base:test_search.test_13_m2o_order_loop_multi"}
+export TESTS_TEST_TAGS=${TESTS_TEST_TAGS:-"-/base:TestRealCursor.test_connection_readonly,/base:test_search.test_13_m2o_order_loop_multi"}
 export TESTS_SKIP_BUILD=${TESTS_SKIP_BUILD:-"true"}
+export ODOO_VERSION=${ODOO_VERSION:-"18.0"}
 
 # Ensure we do not have a lingering odoo_testing_db
 docker rm -f "${TESTS_POSTGRES_CONTAINER_NAME}" 2>/dev/null || true
@@ -24,7 +25,10 @@ docker rm -f "${TESTS_POSTGRES_CONTAINER_NAME}" 2>/dev/null || true
 # Optionally skip building the image
 if [ "${SKIP_BUILD}" != "true" ]; then
   # Build the testing image
-  docker build -t "${TESTS_IMAGE_TAG}" -f "${TESTS_WORKDIR}/${TESTS_DOCKERFILE}" "${TESTS_WORKDIR}"
+  docker build -t "${TESTS_IMAGE_TAG}" \
+    --build-arg ODOO_VERSION=${ODOO_VERSION} \
+    -f "${TESTS_WORKDIR}/${TESTS_DOCKERFILE}" \
+    "${TESTS_WORKDIR}"
 
   BUILD_EXIT_CODE=$?
 
