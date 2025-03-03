@@ -15,7 +15,7 @@ export TESTS_DB_HOST=${TESTS_DB_HOST:-"${TESTS_POSTGRES_CONTAINER_NAME}"}
 export TESTS_DB_USER=${TESTS_DB_USER:-"odoo"}
 export TESTS_DB_PASSWORD=${TESTS_DB_PASSWORD:-"odoo"}
 export TESTS_DB_NAME=${TESTS_DB_NAME:-"testing"}
-export TESTS_TEST_TAGS=${TESTS_TEST_TAGS:-"-/base:TestRealCursor.test_connection_readonly,/base:test_search.test_13_m2o_order_loop_multi"}
+export TESTS_TEST_TAGS=${TESTS_TEST_TAGS:-"-/base:TestRealCursor.test_connection_readonly"}
 export TESTS_SKIP_BUILD=${TESTS_SKIP_BUILD:-"true"}
 export ODOO_VERSION=${ODOO_VERSION:-"18.0"}
 
@@ -47,6 +47,7 @@ docker run -d \
   -e POSTGRES_USER="${TESTS_DB_USER}" \
   -e POSTGRES_PASSWORD="${TESTS_DB_PASSWORD}" \
   -e POSTGRES_DB="${TESTS_DB_NAME}" \
+  -e POSTGRES_INITDB_ARGS="--locale=en_US.utf8 --lc-collate=en_US.utf8 --lc-ctype=en_US.utf8" \
   "${TESTS_POSTGRES_IMAGE}"
 
 # Wait for the postgres database to start
