@@ -129,6 +129,7 @@ RUN apt-get update && \
         postgresql-client \
         libcairo2-dev \
         libcairo2 \
+        git \
         && rm -rf /var/lib/apt/lists/*
 
 # Copy the wkhtmltopdf binary that we fetched in the wkhtmltox build step
@@ -147,9 +148,6 @@ RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
 
 # Set the owner to user:group ubuntu:ubuntu
 RUN chown -R ubuntu:ubuntu /volumes
-
-# Expose the volumes to allow users to mount these folders directly
-VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
 
 # The /venv folder will house our Python virtual environment
 WORKDIR /venv
@@ -177,6 +175,9 @@ RUN mkdir -p "/venv/lib/python${PYTHON_VERSION}/site-packages/addons"
 
 # This is the final container that will run the Odoo process
 FROM setup
+
+# Expose the volumes to allow users to mount these folders directly
+VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config"]
 
 # Docker labels
 LABEL maintainer="Adomi Software, LLC <github@adomisoftware.com>" \
@@ -281,7 +282,7 @@ WORKDIR /odoo
 COPY --from=source /source/odoo/ .
 
 # Install Odoo into the venv
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir -e .
 
 # When Odoo is installed, it is installed into the odoo dist package:
 # /venv/lib/python3/site-packages/odoo.
@@ -309,7 +310,7 @@ COPY entrypoint.sh /
 # and generated the odoo configuration file but has not yet started Odoo.
 # This lets a developer hook into the pre-launch process
 # and have all the processed data at their disposal
-COPY hook_setup.sh /
+COPY hook_setup /
 
 # The wait-for-psql script waits for Postgres to start accepting connections
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
