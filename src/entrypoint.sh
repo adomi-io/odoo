@@ -333,7 +333,7 @@ IMAGE_CONFIG_LOCATION="${IMAGE_CONFIG_LOCATION:-/volumes/config/odoo.conf}"
 # and write them to the generated config file
 envsubst < "${IMAGE_CONFIG_LOCATION}" > "${ODOO_RC}"
 
-/hook_setup.sh
+/hook_setup "$@"
 
 case "$1" in
     -- | odoo)

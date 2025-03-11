@@ -84,7 +84,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./src
-          platforms: linux/amd64
+          platforms: amd64,arm64
           build-args: |
             ODOO_VERSION=${{ matrix.branch }}
           tags: ${{ steps.meta.outputs.tags }}
