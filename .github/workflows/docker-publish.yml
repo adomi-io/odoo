@@ -18,6 +18,8 @@ env:
   REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   IMAGE_NAME: ${{ github.repository }}
   SKIP_UNIT_TESTS: true
+  TARGET_PLATFORMS: amd64
+#  TARGET_PLATFORMS: amd64,arm64
 
 jobs:
   build-and-push:
@@ -77,7 +79,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ env.REGISTRY_USERNAME}}
           password: ${{ env.REGISTRY_PASSWORD }}
-
       - name: Extract Docker metadata
         if: github.event_name != 'pull_request'
         id: meta
@@ -99,7 +100,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./src
-          platforms: amd64,arm64
+          platforms: {{env.TARGET_PLATFORMS}}
           build-args: |
             ODOO_VERSION=${{ matrix.branch }}
           tags: ${{ steps.meta.outputs.tags }}
