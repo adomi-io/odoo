@@ -87,9 +87,6 @@ jobs:
           tags: |
             type=schedule,pattern=nightly
             type=ref,event=pr
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}
             type=ref,event=branch
             type=raw,value=${{ matrix.branch }},enable=true
             type=raw,value=latest,enable=${{ matrix.branch == '18.0' }}
