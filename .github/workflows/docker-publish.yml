@@ -19,7 +19,6 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   SKIP_UNIT_TESTS: true
   TARGET_PLATFORMS: amd64
-#  TARGET_PLATFORMS: amd64,arm64
 
 jobs:
   build-and-push:
