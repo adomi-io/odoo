@@ -84,9 +84,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: | 
+            latest=auto
+            prefix=${{ matrix.branch }}
           tags: |
-            type=raw,value=${{ matrix.branch }},enable=true
-            type=schedule,pattern={{date 'YYYYMMDD-HHmmss' tz='UTC'}}
+            type=schedule,pattern=nightly
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{major}}.{{minor}}
