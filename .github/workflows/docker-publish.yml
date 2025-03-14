@@ -52,6 +52,7 @@ jobs:
 
       - name: Build Docker image for testing
         id: build
+        if: env.SKIP_UNIT_TESTS != 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./src
