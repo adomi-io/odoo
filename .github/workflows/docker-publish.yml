@@ -85,7 +85,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: | 
-            latest=latest
+            latest=true
           tags: |
             type=schedule,pattern=nightly
             type=ref,event=branch
