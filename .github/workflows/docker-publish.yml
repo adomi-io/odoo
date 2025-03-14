@@ -86,8 +86,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=schedule,pattern=nightly
-            type=ref,event=pr
-            type=ref,event=branch
+            type=pep440,pattern={{version}},value=${{ matrix.branch }}
+            type=semver,pattern={{version}},value=${{ matrix.branch }}
             type=raw,value=${{ matrix.branch }},enable=true
             type=raw,value=latest,enable=${{ matrix.branch == '18.0' }}
             type=raw,value=nightly,enable=${{ github.event_name == 'schedule' }}
