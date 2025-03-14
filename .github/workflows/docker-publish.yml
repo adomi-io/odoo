@@ -84,16 +84,16 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          flavor: | 
-            latest=true
           tags: |
             type=schedule,pattern=nightly
-            type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}
-            type=sha
+            type=ref,event=branch
+            type=raw,value=${{ matrix.branch }},enable=true
+            type=raw,value=latest,enable=${{ matrix.branch == '18.0' }}
+            type=raw,value=nightly,enable=${{ github.event_name == 'schedule' }}
       - name: Build and push multi-arch Docker image
         if: github.event_name != 'pull_request'
         id: build-and-push
