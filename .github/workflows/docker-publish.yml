@@ -17,8 +17,8 @@ env:
   REGISTRY_USERNAME: ${{ github.actor }}
   REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   IMAGE_NAME: ${{ github.repository }}
-  SKIP_UNIT_TESTS: true
-  TARGET_PLATFORMS: amd64
+  SKIP_UNIT_TESTS: false
+  TARGET_PLATFORMS: amd64,arm64
 
 jobs:
   build-and-push:
