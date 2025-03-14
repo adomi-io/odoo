@@ -85,10 +85,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=match,pattern=\d.\d,value=${{ matrix.branch }}
             type=raw,value=${{ matrix.branch }},enable=true
-            type=raw,value=latest,enable=${{ matrix.branch == '18.0' }}
-            type=raw,value=nightly,enable=${{ github.event_name == 'schedule' }}
       - name: Build and push multi-arch Docker image
         if: github.event_name != 'pull_request'
         id: build-and-push
