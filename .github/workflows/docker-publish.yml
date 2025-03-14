@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        branch: [ "18.0", "17.0" ]
+        branch: [ "17.0", "18.0" ]
       fail-fast: false
     permissions:
       contents: read
