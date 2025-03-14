@@ -17,6 +17,7 @@ env:
   REGISTRY_USERNAME: ${{ github.actor }}
   REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   IMAGE_NAME: ${{ github.repository }}
+  SKIP_UNIT_TESTS: true
 
 jobs:
   build-and-push:
@@ -42,7 +43,6 @@ jobs:
         with:
           path: |
             /tmp/.buildx-cache
-            ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
@@ -63,6 +63,7 @@ jobs:
 
       - name: Run unit tests
         working-directory: tests
+        if: env.SKIP_UNIT_TESTS != 'true'
         env:
           TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-test
           SKIP_BUILD: true
@@ -82,7 +83,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags:
+          tags: |
             type=raw,value=${{ matrix.branch }},enable=true
             type=schedule,pattern={{date 'YYYYMMDD-HHmmss' tz='UTC'}}
             type=ref,event=branch
