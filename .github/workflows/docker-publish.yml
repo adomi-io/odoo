@@ -89,7 +89,7 @@ jobs:
             type=schedule,pattern={{date 'YYYYMMDD-HHmmss' tz='UTC'}}
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{major}}.{{minor}}.{{patch}}
+            type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}
             type=sha
@@ -99,7 +99,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./src
-          platforms: {{env.TARGET_PLATFORMS}}
+          platforms: ${{ env.TARGET_PLATFORMS }}
           build-args: |
             ODOO_VERSION=${{ matrix.branch }}
           tags: ${{ steps.meta.outputs.tags }}
