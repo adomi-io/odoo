@@ -88,8 +88,6 @@ This Docker Compose file will launch a copy of Odoo along with a Postgres databa
 Create a file in your project called `docker-compose.yml`
 
 ```yaml
-version: '3.8'
-
 services:
   odoo:
     image: ghcr.io/adomi-io/odoo:18.0
@@ -142,8 +140,6 @@ docker compose up
 If you want to always have Odoo running, you can add the following to your docker-compose.yml:
 
 ```yml
-version: '3.8'
-
 services:
   odoo:
     image: ghcr.io/adomi-io/odoo:18.0
@@ -204,7 +200,6 @@ This command loads all the variables from your `.env` file into the container.
    You can explicitly reference the env file using the `env_file` directive:
 
    ```yaml
-   version: '3.8'
    services:
      odoo:
        image: ghcr.io/adomi-io/odoo:18.0
@@ -239,8 +234,6 @@ docker run --name odoo \
 Docker Compose supports secret files natively. Create a file (e.g., `odoo_db_password.txt`) and reference it in your `docker-compose.yml`:
 
 ```yaml
-version: '3.8'
-
 services:
   odoo:
     image: ghcr.io/adomi-io/odoo:18.0
@@ -286,7 +279,6 @@ COPY . /volumes/addons
 Instead of using the `image` tag in your `docker-compose.yml`, switch to a `build` context. For example, replace:
 
 ```yaml
-version: '3.8'
 services:
   odoo:
     image: ghcr.io/adomi-io/odoo:18.0
@@ -296,7 +288,6 @@ services:
 with:
 
 ```yaml
-version: '3.1'
 services:
   odoo:
     build:
@@ -485,7 +476,6 @@ docker run --name odoo \
 You can also set these options in your `docker-compose.yml` file:
 
 ```yaml
-version: '3.8'
 services:
   odoo:
     image: ghcr.io/adomi-io/odoo:18.0
@@ -540,7 +530,6 @@ docker run -d \
 To use your custom configuration file with Docker Compose, update your `docker-compose.yml` to mount it at `/volumes/config/odoo.conf`:
 
 ```yaml
-version: '3.8'
 services:
   odoo:
     image: ghcr.io/adomi-io/odoo:18.0
@@ -691,8 +680,6 @@ Debugging in PyCharm uses `odoo-bin` directly, bypassing our entrypoint script. 
 Create a `docker-compose-db.yml` file that contains just the database:
 
 ```yaml
-version: '3.8'
-
 services:
   db:
     image: postgres:13
@@ -718,8 +705,6 @@ docker compose -f docker-compose-db.yml up
 Then, create another file to run Odoo, named `docker-compose.yml`:
 
 ```yaml
-version: '3.8'
-
 services:
   odoo:
     build:
@@ -791,7 +776,6 @@ The `odoo.conf` file is processed through `envsubst` and output to `/volumes/con
 For example, move your config file to `./config/odoo.conf` in your project, then update your Docker Compose configuration to mount the `./config` folder:
 
 ```yaml
-version: '3.8'
 services:
   odoo:
     image: ghcr.io/adomi-io/odoo:18.0
