@@ -1,24 +1,34 @@
 services:
   odoo:
-    build:
-      context: ./src
-      dockerfile: Dockerfile
-      secrets:
-        - source: gh_token
-          target: GH_TOKEN
+    image: ghcr.io/adomi-io/odoo:19.0
     ports:
       - "8069:8069"
     environment:
+      # Configure your instances
       ODOO_DB_HOST: ${DB_HOST:-db}
       ODOO_DB_PORT: ${DB_PORT:-5432}
       ODOO_DB_USER: ${DB_USER:-odoo}
       ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
+
+      # Add additional options here, eg:
+      # ODOO_WORKERS: ${ODOO_WORKERS:-0}
+      # ODOO_MAX_CRON_THREADS: ${ODOO_MAX_CRON_THREADS:-0}
+      # ODOO_ADDONS_PATH: /volumes/my-custom-addon-folder
     volumes:
-      - ./src/odoo.conf:/volumes/config/odoo.conf
+      # Mount your addons
       - ./addons:/volumes/addons
+      
+      # Persist Odoo Data
       - odoo_data:/volumes/data
-      # Uncomment this to add enterprise at run-time:
-#      - ./enterprise:/volumes/enterprise
+      
+      # Add enterprise
+      # - ./enterprise:/volumes/enterprise
+        
+      # Mount a custom config
+      # - ./src/odoo.conf:/volumes/config/odoo.conf
+      
+      # Add additional addons like OCA packages or sub-modules
+      # - ./sub-modules:/volumes/extra_addons
     depends_on:
       - db
   db:
@@ -32,9 +42,6 @@ services:
       - pg_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-secrets:
-  gh_token:
-    environment: GH_TOKEN
 volumes:
   odoo_data:
   pg_data:

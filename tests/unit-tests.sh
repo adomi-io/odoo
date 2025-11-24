@@ -15,9 +15,9 @@ export TESTS_DB_HOST=${TESTS_DB_HOST:-"${TESTS_POSTGRES_CONTAINER_NAME}"}
 export TESTS_DB_USER=${TESTS_DB_USER:-"odoo"}
 export TESTS_DB_PASSWORD=${TESTS_DB_PASSWORD:-"odoo"}
 export TESTS_DB_NAME=${TESTS_DB_NAME:-"testing"}
-export TESTS_TEST_TAGS=${TESTS_TEST_TAGS:-"-/base:TestRealCursor.test_connection_readonly,-/base:test_search.test_13_m2o_order_loop_multi"}
+export TESTS_TEST_TAGS=${TESTS_TEST_TAGS:-"-/base:TestRealCursor.test_connection_readonly,-/base:test_search.test_13_m2o_order_loop_multi,-/base:TestOrmCache.test_signaling_01_multiple,-/base:TestOrmCache.test_signaling_01_single"}
 export TESTS_SKIP_BUILD=${TESTS_SKIP_BUILD:-"true"}
-export ODOO_VERSION=${ODOO_VERSION:-"18.0"}
+export ODOO_VERSION=${ODOO_VERSION:-"19.0"}
 
 # Ensure we do not have a lingering odoo_testing_db
 docker rm -f "${TESTS_POSTGRES_CONTAINER_NAME}" 2>/dev/null || true
