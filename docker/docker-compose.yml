@@ -1,6 +1,6 @@
 services:
   odoo:
-    image: ghcr.io/adomi-io/odoo:19.0
+    image: ghcr.io/adomi-io/odoo:18.0
     ports:
       - "8069:8069"
     environment:

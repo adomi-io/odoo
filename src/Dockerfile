@@ -4,7 +4,7 @@
 # from odoo import release; print(release.repos_heads)
 FROM alpine AS source
 
-ARG ODOO_VERSION=19.0
+ARG ODOO_VERSION=18.0
 ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
 
 # Install required packages: curl, jq, and tar (or unzip if needed)

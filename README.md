@@ -79,7 +79,7 @@ Then run `docker compose up`
 ```yaml
 services:
   odoo:
-    image: ghcr.io/adomi-io/odoo:19.0
+    image: ghcr.io/adomi-io/odoo:18.0
     restart: unless-stopped 
     ports:
       - "8069:8069"
@@ -146,7 +146,7 @@ docker run --name odoo \
   -e ODOO_DB_USER=your-postgres-user \
   -e ODOO_DB_PASSWORD=your-postgres-password \
   -e ODOO_DB_PORT=5432 \
-  ghcr.io/adomi-io/odoo:19.0
+  ghcr.io/adomi-io/odoo:18.0
 ```
 
 > [!TIP]
@@ -166,7 +166,7 @@ docker run --name odoo \
 Pull the latest nightly build for your version of Odoo:
 
 ```bash
-docker pull ghcr.io/adomi-io/odoo:19.0
+docker pull ghcr.io/adomi-io/odoo:18.0
 ```
 
 ## Supported versions
@@ -174,7 +174,7 @@ docker pull ghcr.io/adomi-io/odoo:19.0
 
 | Odoo                                               | Pull Command                                 |
 |----------------------------------------------------|----------------------------------------------|
-| [19.0](https://github.com/adomi-io/odoo/tree/19.0) | ```docker pull ghcr.io/adomi-io/odoo:19.0``` |
+| [18.0](https://github.com/adomi-io/odoo/tree/18.0) | ```docker pull ghcr.io/adomi-io/odoo:18.0``` |
 | [18.0](https://github.com/adomi-io/odoo/tree/18.0) | ```docker pull ghcr.io/adomi-io/odoo:18.0``` |
 
 # Configure your container
@@ -202,7 +202,7 @@ you keep secrets out of your command line and source code.
 ```yaml
 services:
     odoo:
-      image: ghcr.io/adomi-io/odoo:19.0
+      image: ghcr.io/adomi-io/odoo:18.0
       ports:
         - "8069:8069"
       env_file:
@@ -233,7 +233,7 @@ ODOO_DB_PASSWORD=odoo
 docker run --name odoo \
  --env-file .env \
  -p 8069:8069 \
- ghcr.io/adomi-io/odoo:19.0
+ ghcr.io/adomi-io/odoo:18.0
 ```
 
 This command loads all the variables from your `.env` file into the image.
@@ -259,7 +259,7 @@ Docker Compose supports secret files natively. Create a file (e.g., `odoo_db_pas
 ```yaml
 services:
   odoo:
-    image: ghcr.io/adomi-io/odoo:19.0
+    image: ghcr.io/adomi-io/odoo:18.0
     ports:
       - "8069:8069"
     environment:
@@ -285,7 +285,7 @@ docker run --name odoo \
   -e ODOO_DB_HOST=odoo_db \
   -v $(pwd)/ODOO_DB_PASSWORD:/run/secrets/ODOO_DB_PASSWORD \
   -e ODOO_DB_PASSWORD=odoo \
-  ghcr.io/adomi-io/odoo:19.0
+  ghcr.io/adomi-io/odoo:18.0
 ```
 
 # Logging into container
@@ -313,7 +313,7 @@ You can even pre-build an image with Odoo Enterprise!
 In your project's root, create a file named `Dockerfile`:
 
 ```dockerfile
-FROM ghcr.io/adomi-io/odoo:19.0
+FROM ghcr.io/adomi-io/odoo:18.0
 
 # Install Python dependenies
 # USER root
@@ -334,7 +334,7 @@ switch to a `build` context. For example, replace:
 ```yaml
 services:
   odoo:
-    image: ghcr.io/adomi-io/odoo:19.0
+    image: ghcr.io/adomi-io/odoo:18.0
     # ...
 ```
 
@@ -382,7 +382,7 @@ git clone git@github.com:odoo/enterprise.git
 Then, create a `Dockerfile` in your project with the following content:
 
 ```dockerfile
-FROM ghcr.io/adomi-io/odoo:19.0
+FROM ghcr.io/adomi-io/odoo:18.0
 
 # Copy the Enterprise addons into the folder located at /volumes/enterprise
 COPY ./enterprise /volumes/enterprise
@@ -405,7 +405,7 @@ If you're not an Odoo Partner but have a valid Enterprise license, you can downl
 Create a `Dockerfile` with the following content:
 
 ```dockerfile
-FROM ghcr.io/adomi-io/odoo:19.0
+FROM ghcr.io/adomi-io/odoo:18.0
 
 # Copy the Enterprise addons into the folder located at /volumes/enterprise
 COPY ./enterprise /volumes/enterprise
@@ -429,7 +429,7 @@ If there is a directory loaded to `/volumes/extra_addons`, the entrypoint script
 to the Odoo addons path.
 
 ```dockerfile
-FROM ghcr.io/adomi-io/odoo:19.0
+FROM ghcr.io/adomi-io/odoo:18.0
 
 # Copy your submodules and external addons into the folder located at /volumes/extra_addons
 COPY ./oca/addons /volumes/extra_addons
@@ -514,7 +514,7 @@ You can also set these options in your `docker-compose.yml` file:
 ```yaml
 services:
   odoo:
-    image: ghcr.io/adomi-io/odoo:19.0
+    image: ghcr.io/adomi-io/odoo:18.0
     ports:
       - "8069:8069"
     environment:
@@ -538,7 +538,7 @@ docker run --name odoo \
   -e ODOO_DB_USER=odoo \
   -e ODOO_DB_PASSWORD=odoo \
   -e ODOO_WORKERS=5 \
-  ghcr.io/adomi-io/odoo:19.0
+  ghcr.io/adomi-io/odoo:18.0
 ```
 
 # Create your own dynamic `odoo.conf`
@@ -575,7 +575,7 @@ To use your custom configuration file with Docker Compose, update your `docker-c
 ```yaml
 services:
   odoo:
-    image: ghcr.io/adomi-io/odoo:19.0
+    image: ghcr.io/adomi-io/odoo:18.0
     # ...
     volumes:
       - ./config/odoo.conf:/volumes/config/odoo.conf # Add this to your docker compose configuration
@@ -590,7 +590,7 @@ docker run -d \
   --name odoo \
   -p 8069:8069 \
   -v $(pwd)/odoo.conf:/volumes/config/odoo.conf \
-  ghcr.io/adomi-io/odoo:19.0
+  ghcr.io/adomi-io/odoo:18.0
 ```
 
 ## Environment Variable Defaults
@@ -615,7 +615,7 @@ Copy the [odoo.conf](./src/odoo.conf) file, then uncomment or set the configurat
 Setting the default with `ENV` will set that value if no environment variable is passed into the image. This lets you define defaults and override them later via environment variables or your cloud provider's UI at runtime.
 
 ```dockerfile
-FROM ghcr.io/adomi-io/odoo:19.0
+FROM ghcr.io/adomi-io/odoo:18.0
 
 # Copy your config into the image
 COPY odoo.conf /volumes/config/odoo.conf
@@ -710,7 +710,7 @@ For example, move your config file to `./config/odoo.conf` in your project, then
 ```yaml
 services:
   odoo:
-    image: ghcr.io/adomi-io/odoo:19.0
+    image: ghcr.io/adomi-io/odoo:18.0
     # ...
     volumes:
       - ./config:/volumes/config # This mounts your config folder into the image
