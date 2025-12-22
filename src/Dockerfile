@@ -27,7 +27,8 @@ RUN --mount=type=cache,target=/root/.cache/git \
 FROM alpine/curl AS wkhtmltox
 
 # Options to fetch WKHTMLTOPDF
-ARG WKHTMLTOPDF_VERSION=0.12.6.1-3.jammy
+ARG WKHTMLTOPDF_VERSION=0.12.6.1-3
+ARG WKHTMLTOPDF_TARGET=jammy
 ARG WKHTMLTOPDF_AMD64_SHA=967390a759707337b46d1c02452e2bb6b2dc6d59
 ARG WKHTMLTOPDF_ARM64_SHA=90f6e69896d51ef77339d3f3a20f8582bdf496cc
 ARG WKHTMLTOPDF_PPC64EL_SHA=5312d7d34a25b321282929df82e3574319aed25c
@@ -42,15 +43,23 @@ WORKDIR /wkhtmltox
 # wkhtmltopdf based on the builds target architecture, and confirm
 # its validity based on its checksum
 RUN set -eu; \
-    if [ -z "${TARGETARCH:-}" ]; then TARGETARCH="$(apk --print-arch)"; fi; \
-    case "${TARGETARCH}" in \
-      x86_64|amd64)    ARCH=amd64;   SHA=$WKHTMLTOPDF_AMD64_SHA ;; \
-      aarch64|arm64)   ARCH=arm64;   SHA=$WKHTMLTOPDF_ARM64_SHA ;; \
-      ppc64le|ppc64el) ARCH=ppc64el; SHA=$WKHTMLTOPDF_PPC64EL_SHA ;; \
-      *) echo "Unsupported arch: ${TARGETARCH}"; exit 1 ;; \
-    esac; \
-    curl -sSL -o wkhtmltox.deb "https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_${WKHTMLTOPDF_VERSION}_${ARCH}.deb"; \
-    echo "${SHA}  wkhtmltox.deb" | sha1sum -c -
+  if [ -z "${TARGETARCH:-}" ]; then TARGETARCH="$(apk --print-arch)"; fi; \
+  case "${TARGETARCH}" in \
+    x86_64|amd64)    ARCH=amd64;   SHA="$WKHTMLTOPDF_AMD64_SHA" ;; \
+    aarch64|arm64)   ARCH=arm64;   SHA="$WKHTMLTOPDF_ARM64_SHA" ;; \
+    ppc64le|ppc64el) ARCH=ppc64el; SHA="$WKHTMLTOPDF_PPC64EL_SHA" ;; \
+    *) echo "Unsupported arch: ${TARGETARCH}"; exit 1 ;; \
+  esac; \
+  url="https://github.com/wkhtmltopdf/packaging/releases/download/${WKHTMLTOPDF_VERSION}/wkhtmltox_${WKHTMLTOPDF_VERSION}.${WKHTMLTOPDF_TARGET}_${ARCH}.deb"; \
+  echo "Downloading: $url"; \
+  curl -fSL  \
+    --retry 5  \
+    --retry-all-errors  \
+    --connect-timeout 60  \
+    -o wkhtmltox.deb "$url"; \
+  head -c 7 wkhtmltox.deb | grep -aq '^!<arch>'; \
+  echo "${SHA}  wkhtmltox.deb" | sha1sum -c -
+
 
 # This will download the latest version of the
 # MaxMind GeoLite2 country, city, and ASN databases
@@ -65,12 +74,9 @@ RUN apk add --no-cache curl jq tar
 WORKDIR /geolite
 
 # Download the latest release assets from the repository
-RUN urls=$(curl -s https://api.github.com/repos/${GEOLITE_GITHUB_REPOSITORY}/releases/latest \
-         | jq -r '.assets[].browser_download_url') \
- && for url in $urls; do \
-      echo "Downloading $url..."; \
-      curl -L "$url" -o "$(basename "$url")"; \
-    done
+RUN curl -L -O "https://github.com/${GEOLITE_GITHUB_REPOSITORY}/raw/download/GeoLite2-City.mmdb" \
+ && curl -L -O "https://github.com/${GEOLITE_GITHUB_REPOSITORY}/raw/download/GeoLite2-Country.mmdb" \
+ && curl -L -O "https://github.com/${GEOLITE_GITHUB_REPOSITORY}/raw/download/GeoLite2-ASN.mmdb"
 
 # This is the final output, and is the container that will run our code
 FROM ubuntu:noble AS setup
