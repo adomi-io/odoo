@@ -32,8 +32,8 @@ export ODOO_ADDONS_PATH="${ODOO_ADDONS_PATH:-}"
 # upgrade_path (default '')
 export ODOO_UPGRADE_PATH="${ODOO_UPGRADE_PATH:-}"
 
-# server-wide modules (default base,rpc,web)
-export ODOO_SERVER_WIDE_MODULES="${ODOO_SERVER_WIDE_MODULES:-base,rpc,web}"
+# server-wide modules (default base,web)
+export ODOO_SERVER_WIDE_MODULES="${ODOO_SERVER_WIDE_MODULES:-base,web}"
 
 # data_dir (default /var/lib/odoo)
 export ODOO_DATA_DIR="${ODOO_DATA_DIR:-/volumes/data}"
