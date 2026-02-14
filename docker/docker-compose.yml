@@ -15,6 +15,9 @@ services:
       # ODOO_MAX_CRON_THREADS: ${ODOO_MAX_CRON_THREADS:-0}
       # ODOO_ADDONS_PATH: /volumes/my-custom-addon-folder
     volumes:
+      # Mount a custom config
+      # - ./config/odoo.conf:/volumes/config/odoo.conf
+
       # Mount your addons
       - ./addons:/volumes/addons
       
@@ -23,10 +26,7 @@ services:
       
       # Add enterprise
       # - ./enterprise:/volumes/enterprise
-        
-      # Mount a custom config
-      # - ./src/odoo.conf:/volumes/config/odoo.conf
-      
+
       # Add additional addons like OCA packages or sub-modules
       # - ./sub-modules:/volumes/extra_addons
     depends_on:
