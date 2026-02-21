@@ -29,6 +29,7 @@ FROM alpine/curl AS wkhtmltox
 # Options to fetch WKHTMLTOPDF
 ARG WKHTMLTOPDF_VERSION=0.12.6.1-3
 ARG WKHTMLTOPDF_TARGET=jammy
+
 ARG WKHTMLTOPDF_AMD64_SHA=967390a759707337b46d1c02452e2bb6b2dc6d59
 ARG WKHTMLTOPDF_ARM64_SHA=90f6e69896d51ef77339d3f3a20f8582bdf496cc
 ARG WKHTMLTOPDF_PPC64EL_SHA=5312d7d34a25b321282929df82e3574319aed25c
@@ -60,7 +61,6 @@ RUN set -eu; \
   head -c 7 wkhtmltox.deb | grep -aq '^!<arch>'; \
   echo "${SHA}  wkhtmltox.deb" | sha1sum -c -
 
-
 # This will download the latest version of the
 # MaxMind GeoLite2 country, city, and ASN databases
 # which is used for IP Address geolocation
@@ -86,7 +86,8 @@ FROM ubuntu:noble AS setup
 SHELL ["/bin/bash", "-xeuo", "pipefail", "-c"]
 
 # Which version of Python to setup in the venv
-ARG PYTHON_VERSION=3.13
+# Keep this pinned to a version available in the base Ubuntu repositories.
+ARG PYTHON_VERSION=3.12
 
 # Non-root user and group for better security on hosts with mounted volumes
 ARG UID=1000
@@ -166,14 +167,11 @@ RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
 # The /venv folder will house our Python virtual environment
 WORKDIR /venv
 
-# Install and setup Python. This uses the deadsnakes/ppa repository, which allows you to pull and test
-# future releases of Python if you want.
+# Install and setup Python from the base Ubuntu repositories (no external PPAs).
 RUN --mount=type=cache,target=/var/cache/apt \
   export DEBIAN_FRONTEND=noninteractive; \
   apt-get update; \
-  apt-get install -y --no-install-recommends gnupg software-properties-common ca-certificates; \
-  add-apt-repository -y ppa:deadsnakes/ppa; \
-  apt-get update; \
+  apt-get install -y --no-install-recommends ca-certificates; \
   apt-get install -y --no-install-recommends \
        "python${PYTHON_VERSION}" "python${PYTHON_VERSION}-venv" "python${PYTHON_VERSION}-dev" \
        libxml2-dev libxslt1-dev zlib1g-dev libjpeg-dev libfreetype6-dev; \
@@ -191,8 +189,8 @@ COPY --from=source /source/odoo/requirements.txt requirements.txt
 # Install the Odoo requirements
 # We cache pip to speed rebuilds
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+    pip install --upgrade pip \
+    && pip install -r requirements.txt
 
 # Install some additional addons required by Odoo
 RUN pip install rlpycairo
@@ -200,7 +198,7 @@ RUN pip install rlpycairo
 # Odoo's unit tests check to ensure that addons are located at
 # /usr/lib/python3/dist-packages/addons.
 # This is not setup automatically and must be created for unit tests to pass
-RUN mkdir -p "/venv/lib/python${PYTHON_VERSION}/site-packages/addons"
+RUN mkdir -p "/usr/lib/python3/dist-packages/addons"
 
 # This is the final container that will run the Odoo process
 FROM setup
@@ -224,7 +222,7 @@ SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 # If you set these, these values are baked into the container.
 # This means they will be the default if no other environment variable is specified at run-time.
 ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
-    ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
+    ODOO_ADDONS_PATH="/odoo/odoo/addons,/odoo/addons,/volumes/addons" \
     ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
     ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
     SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
@@ -236,25 +234,23 @@ WORKDIR /odoo
 # Copy the code from the source-fetching container and copy it into the Odoo folder
 COPY --from=source /source/odoo/ .
 
-# Install Odoo into the venv
+# Install Odoo into the venv.
+# NOTE: Avoid editable installs (`-e`) because they introduce `__editable__...` path hook
+# entries into `odoo.addons.__path__`, and Odoo's own unit tests expect all addons paths
+# to be real directories.
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir .
-
-
-# Odoo requires pypdf2<3.0. PyPDF2 is deprecated, and there is work in the upstream to fix this
-RUN pip install "pypdf2<3.0"
-
+    pip install .
 
 # Add odoo-bin to the global applications
 RUN chmod +x /odoo/odoo-bin \
  && ln -sf /odoo/odoo-bin /usr/local/bin/odoo-bin \
  && ln -sf /venv/bin/odoo /usr/local/bin/odoo
 
-# When Odoo is installed, it is installed into the odoo dist package:
-# /venv/lib/python3/site-packages/odoo.
-# Odoo's unit tests expect there to be a site-package installed called odoo-bin (test_upgrade_code.py)
-# We can create a sym link from our source directory to odoo-bin
-RUN ln -s /odoo/odoo-bin "/venv/lib/python${PYTHON_VERSION}/site-packages/odoo-bin"
+# Odoo's unit tests expect there to be a site-package installed called odoo-bin (test_upgrade_code.py).
+# Create a symlink inside the venv's site-packages without hard-coding its path.
+RUN set -eux; \
+    SITE_PACKAGES="$(python -c 'import site; print(site.getsitepackages()[0])')"; \
+    ln -sf /odoo/odoo-bin "${SITE_PACKAGES}/odoo-bin"
 
 # Copy the odoo config into the default location
 COPY odoo.conf /volumes/config/odoo.conf

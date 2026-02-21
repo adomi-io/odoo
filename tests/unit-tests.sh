@@ -16,14 +16,14 @@ export TESTS_DB_USER=${TESTS_DB_USER:-"odoo"}
 export TESTS_DB_PASSWORD=${TESTS_DB_PASSWORD:-"odoo"}
 export TESTS_DB_NAME=${TESTS_DB_NAME:-"testing"}
 export TESTS_TEST_TAGS=${TESTS_TEST_TAGS:-"-/base:TestRealCursor.test_connection_readonly,-/base:test_search.test_13_m2o_order_loop_multi,-/base:TestOrmCache.test_signaling_01_multiple,-/base:TestOrmCache.test_signaling_01_single"}
-export TESTS_SKIP_BUILD=${TESTS_SKIP_BUILD:-"true"}
+export TESTS_SKIP_BUILD=${TESTS_SKIP_BUILD:-"false"}
 export ODOO_VERSION=${ODOO_VERSION:-"19.0"}
 
 # Ensure we do not have a lingering odoo_testing_db
 docker rm -f "${TESTS_POSTGRES_CONTAINER_NAME}" 2>/dev/null || true
 
 # Optionally skip building the image
-if [ "${SKIP_BUILD}" != "true" ]; then
+if [ "${TESTS_SKIP_BUILD}" != "true" ]; then
   # Build the testing image
   docker build -t "${TESTS_IMAGE_TAG}" \
     --build-arg ODOO_VERSION=${ODOO_VERSION} \
@@ -70,8 +70,8 @@ docker run \
   -v "${CONFIG_FILE}":/volumes/config/odoo.conf \
   -e ODOO_DB_HOST="${TESTS_DB_HOST}" \
   -e ODOO_DB_PORT="${TESTS_DB_PORT:-5432}" \
-  -e ODOO_DB_USER="${DB_USER:-odoo}" \
-  -e ODOO_DB_PASSWORD="${DB_PASSWORD:-odoo}" \
+  -e ODOO_DB_USER="${TESTS_DB_USER:-odoo}" \
+  -e ODOO_DB_PASSWORD="${TESTS_DB_PASSWORD:-odoo}" \
   -e ODOO_ADDONS_PATH="${TESTS_ADDONS_PATH:-/odoo/addons}" \
   --rm "${TESTS_IMAGE_TAG}" \
   --database "${TESTS_DATABASE}" \
@@ -85,7 +85,7 @@ docker run \
 TEST_EXIT_CODE=$?
 
 # Cleanup our mess
-docker stop odoo_testing_db
+docker stop "${TESTS_POSTGRES_CONTAINER_NAME}" 2>/dev/null || true
 
 # Print our result and return the test status if
 # the status code does not equal 0

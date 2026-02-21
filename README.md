@@ -599,7 +599,7 @@ your Odoo image, the defaults will be used. For more details, check the [Dockerf
 
 ```dockerfile
 ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
-    ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
+    ODOO_ADDONS_PATH="/odoo/odoo/addons,/odoo/addons,/volumes/addons" \
     ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
     ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
     SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt

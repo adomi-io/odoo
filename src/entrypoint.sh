@@ -290,6 +290,30 @@ if [ -d "${IMAGE_EXTRA_ADDONS_LOCATION}" ]; then
     fi
 fi
 
+# De-duplicate addons paths to avoid confusing logs and accidental repeated scanning.
+# Odoo may also inject its own core addons path (e.g. `/odoo/odoo/addons`) based on
+# installation layout; we keep the explicit list stable and unique here.
+if [ -n "${ODOO_ADDONS_PATH:-}" ]; then
+    IFS=',' read -r -a _addons_paths <<< "${ODOO_ADDONS_PATH}"
+    declare -A _seen_addons_paths=()
+    _unique_addons_paths=()
+
+    for p in "${_addons_paths[@]}"; do
+        # trim leading/trailing whitespace
+        p="${p#"${p%%[![:space:]]*}"}"
+        p="${p%"${p##*[![:space:]]}"}"
+        [ -n "$p" ] || continue
+
+        if [ -z "${_seen_addons_paths[$p]+x}" ]; then
+            _seen_addons_paths[$p]=1
+            _unique_addons_paths+=("$p")
+        fi
+    done
+
+    ODOO_ADDONS_PATH="$(IFS=','; echo "${_unique_addons_paths[*]}")"
+    export ODOO_ADDONS_PATH
+fi
+
 # Guard-rail: unset envs that should be integers if they are non-numeric (Odoo will fall back to defaults)
 INT_VARS=(
   ODOO_HTTP_PORT
