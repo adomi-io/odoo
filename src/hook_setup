@@ -1,3 +1,65 @@
 #! /bin/bash
 
-echo "No setup hooks to process"
+set -euo pipefail
+
+####
+# Setup hooks
+####
+# Allow users to mount arbitrary one-off setup scripts into the container.
+#
+# The default location is `/hooks/setup`, but this can be overridden with
+# `HOOK_SETUP_DIR`.
+#
+# Hook naming convention:
+#   <number>.<anything>
+# Example:
+#   0.install_deps.sh
+#   10.configure_odoo
+#
+# Hooks are executed in ascending order by the numeric prefix.
+
+HOOK_SETUP_DIR="${HOOK_SETUP_DIR:-/hooks/setup}"
+
+# Nothing to do if no hooks directory was mounted.
+if [[ ! -d "$HOOK_SETUP_DIR" ]]; then
+  echo "No setup hooks directory found at '$HOOK_SETUP_DIR'; skipping"
+  exit 0
+fi
+
+# We'll build a sortable list of "order path" lines and run them in order.
+hook_lines=""
+
+# If the directory is empty, don't treat the glob literally.
+shopt -s nullglob
+for hook_path in "$HOOK_SETUP_DIR"/*; do
+  [[ -f "$hook_path" ]] || continue
+
+  hook_file="$(basename -- "$hook_path")"
+
+  if [[ "$hook_file" =~ ^([0-9]+)\..+$ ]]; then
+    hook_order="${BASH_REMATCH[1]}"
+    hook_lines+="${hook_order}\t${hook_path}"$'\n'
+  fi
+done
+
+if [[ -z "$hook_lines" ]]; then
+  echo "No setup hooks to process in '$HOOK_SETUP_DIR'"
+  exit 0
+fi
+
+echo "Processing setup hooks in '$HOOK_SETUP_DIR'"
+
+while IFS=$'\t' read -r hook_order hook_path; do
+  [[ -n "${hook_path:-}" ]] || continue
+
+  echo "Running setup hook [$hook_order]: $hook_path"
+
+  # If the hook isn't executable (common on bind mounts), run it via bash.
+  if [[ -x "$hook_path" ]]; then
+    "$hook_path"
+  else
+    /bin/bash "$hook_path"
+  fi
+
+done < <(printf '%s' "$hook_lines" | sort -n -k1,1)
+

@@ -636,13 +636,23 @@ ENV ODOO_WORKERS=5
 > utility (e.g., `scaffold`) and executes before the `wait-for-psql`
 > script, so it doesn't guarantee that the database is reachable.
 
-When the image starts, it processes all the environment variables and their defaults to generate a `_generated.conf` file. 
+When the image starts, it processes all the environment variables and their defaults to generate a `_generated.conf` file.
 
 Once that's done, but before Odoo launches, the entrypoint invokes a script located at `/hook_setup`.
 
-Use this hook to run any custom bash commands right before Odoo starts up. 
+By default, `/hook_setup` will look for user-mounted setup hooks under `/hooks/setup` (override with `HOOK_SETUP_DIR`).
 
-Mount your script to `/hook_setup`.
+Hooks are executed in ascending order based on the leading number in the filename:
+
+```text
+<number>.<anything>
+0.install_deps.sh
+10.configure_odoo
+```
+
+If a hook file is executable, it will be run directly; otherwise it will be run via `/bin/bash`.
+
+Mount your hooks directory to `/hooks/setup` (or set `HOOK_SETUP_DIR` to another path).
 
 # Development with this image
 

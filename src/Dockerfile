@@ -266,6 +266,9 @@ COPY entrypoint.sh /
 # and have all the processed data at their disposal
 COPY hook_setup /
 
+# Ensure the hook is executable even if the file mode was lost in transit.
+RUN chmod +x /hook_setup
+
 # The wait-for-psql script waits for Postgres to start accepting connections
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
