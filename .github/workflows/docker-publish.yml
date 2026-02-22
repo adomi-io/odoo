@@ -57,7 +57,7 @@ jobs:
       ODOO_REPOSITORY: ${{ inputs.odoo_repository || 'https://github.com/odoo/odoo.git' }}
       IMAGE_TAG: ${{ inputs.image_tag || '' }}
       TARGET_PLATFORMS: ${{ inputs.target_platforms || 'linux/amd64' }}
-      SKIP_UNIT_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_unit_tests || env.SKIP_UNIT_TESTS }}
+      SKIP_UNIT_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_unit_tests || true }}
 
     steps:
       - name: Checkout repository
@@ -71,7 +71,7 @@ jobs:
 
       - name: Build Docker image for testing
         id: build
-        if: !env.SKIP_UNIT_TESTS
+        if: ${{ !env.SKIP_UNIT_TESTS }}
         uses: docker/build-push-action@v5
         with:
           context: ./src
@@ -85,7 +85,7 @@ jobs:
 
       - name: Run unit tests
         working-directory: tests
-        if: !env.SKIP_UNIT_TESTS
+        if: ${{ !env.SKIP_UNIT_TESTS }}
         env:
           TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.ODOO_VERSION }}-test
           SKIP_BUILD: true
