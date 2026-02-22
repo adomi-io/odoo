@@ -39,31 +39,25 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   ODOO_VERSION: 19.0
   ODOO_REPOSITORY: https://github.com/odoo/odoo.git
-  SKIP_UNIT_TESTS: 'true' # Default for scheduled/push builds; can be overridden for workflow_dispatch.
+  SKIP_UNIT_TESTS: true # Default for scheduled/push builds; can be overridden for workflow_dispatch.
   TARGET_PLATFORMS: linux/amd64
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     concurrency:
-      group: docker-${{ inputs.odoo_version || env.ODOO_VERSION }}
+      group: docker-${{ inputs.odoo_version || '19.0' }}
       cancel-in-progress: true
     permissions:
       contents: read
       packages: write
 
     env:
-      ODOO_VERSION: ${{ inputs.odoo_version || env.ODOO_VERSION }}
-      ODOO_REPOSITORY: ${{ inputs.odoo_repository || env.ODOO_REPOSITORY }}
+      ODOO_VERSION: ${{ inputs.odoo_version || '19.0' }}
+      ODOO_REPOSITORY: ${{ inputs.odoo_repository || 'https://github.com/odoo/odoo.git' }}
       IMAGE_TAG: ${{ inputs.image_tag || '' }}
-      TARGET_PLATFORMS: ${{ inputs.target_platforms || env.TARGET_PLATFORMS }}
-      # Always expose as a string so the `if:` comparisons keep working.
-      SKIP_UNIT_TESTS: >-
-        ${{
-          github.event_name == 'workflow_dispatch'
-            && (inputs.skip_unit_tests && 'true' || 'false')
-            || env.SKIP_UNIT_TESTS
-        }}
+      TARGET_PLATFORMS: ${{ inputs.target_platforms || 'linux/amd64' }}
+      SKIP_UNIT_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_unit_tests || env.SKIP_UNIT_TESTS }}
 
     steps:
       - name: Checkout repository
@@ -77,7 +71,7 @@ jobs:
 
       - name: Build Docker image for testing
         id: build
-        if: env.SKIP_UNIT_TESTS != 'true'
+        if: !env.SKIP_UNIT_TESTS
         uses: docker/build-push-action@v5
         with:
           context: ./src
@@ -91,7 +85,7 @@ jobs:
 
       - name: Run unit tests
         working-directory: tests
-        if: env.SKIP_UNIT_TESTS != 'true'
+        if: !env.SKIP_UNIT_TESTS
         env:
           TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.ODOO_VERSION }}-test
           SKIP_BUILD: true
