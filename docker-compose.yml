@@ -3,9 +3,6 @@ services:
     build:
       context: ./src
       dockerfile: Dockerfile
-      secrets:
-        - source: gh_token
-          target: GH_TOKEN
     ports:
       - "8069:8069"
     environment:
@@ -16,6 +13,7 @@ services:
     volumes:
       - ./src/odoo.conf:/volumes/config/odoo.conf
       - ./addons:/volumes/addons
+      - ./hooks:/hooks
       - odoo_data:/volumes/data
       # Uncomment this to add enterprise at run-time:
 #      - ./enterprise:/volumes/enterprise

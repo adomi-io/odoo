@@ -38,7 +38,7 @@ for hook_path in "$HOOK_SETUP_DIR"/*; do
 
   if [[ "$hook_file" =~ ^([0-9]+)\..+$ ]]; then
     hook_order="${BASH_REMATCH[1]}"
-    hook_lines+="${hook_order}\t${hook_path}"$'\n'
+    hook_lines+="${hook_order}"$'\t'"${hook_path}"$'\n'
   fi
 done
 
