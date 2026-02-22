@@ -2,6 +2,27 @@ name: Docker
 
 on:
   workflow_dispatch:
+    inputs:
+      odoo_version:
+        description: 'Odoo branch/tag to build (e.g., 19.0)'
+        required: false
+        default: '19.0'
+      odoo_repository:
+        description: 'Odoo git repository to clone (e.g., https://github.com/odoo/odoo.git)'
+        required: false
+        default: 'https://github.com/odoo/odoo.git'
+      image_tag:
+        description: 'Optional: override the Docker tag (defaults to the selected Odoo version)'
+        required: false
+        default: ''
+      target_platforms:
+        description: 'Target platforms for buildx (e.g., linux/amd64,linux/arm64)'
+        required: false
+        default: 'linux/amd64'
+      skip_unit_tests:
+        description: 'Skip unit tests when building this image'
+        type: boolean
+        default: true
   schedule:
     - cron: '38 3 * * *'
   push:
@@ -16,27 +37,37 @@ env:
   REGISTRY_USERNAME: ${{ github.actor }}
   REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   IMAGE_NAME: ${{ github.repository }}
-  SKIP_UNIT_TESTS: false
-  TARGET_PLATFORMS: amd64,arm64
+  ODOO_VERSION: 19.0
+  ODOO_REPOSITORY: https://github.com/odoo/odoo.git
+  SKIP_UNIT_TESTS: 'true' # Default for scheduled/push builds; can be overridden for workflow_dispatch.
+  TARGET_PLATFORMS: linux/amd64
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     concurrency:
-      group: docker-${{ matrix.branch }}
+      group: docker-${{ inputs.odoo_version || env.ODOO_VERSION }}
       cancel-in-progress: true
-    strategy:
-      matrix:
-        branch: [ "19.0" ]
-      fail-fast: false
     permissions:
       contents: read
       packages: write
+
+    env:
+      ODOO_VERSION: ${{ inputs.odoo_version || env.ODOO_VERSION }}
+      ODOO_REPOSITORY: ${{ inputs.odoo_repository || env.ODOO_REPOSITORY }}
+      IMAGE_TAG: ${{ inputs.image_tag || '' }}
+      TARGET_PLATFORMS: ${{ inputs.target_platforms || env.TARGET_PLATFORMS }}
+      # Always expose as a string so the `if:` comparisons keep working.
+      SKIP_UNIT_TESTS: >-
+        ${{
+          github.event_name == 'workflow_dispatch'
+            && (inputs.skip_unit_tests && 'true' || 'false')
+            || env.SKIP_UNIT_TESTS
+        }}
+
     steps:
-      - name: Checkout repository on branch ${{ matrix.branch }}
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ matrix.branch }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -51,8 +82,9 @@ jobs:
         with:
           context: ./src
           build-args: |
-            ODOO_VERSION=${{ matrix.branch }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-test
+            ODOO_VERSION=${{ env.ODOO_VERSION }}
+            ODOO_REPOSITORY=${{ env.ODOO_REPOSITORY }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.ODOO_VERSION }}-test
           push: false
           load: true
           cache-to: type=gha,mode=max
@@ -61,7 +93,7 @@ jobs:
         working-directory: tests
         if: env.SKIP_UNIT_TESTS != 'true'
         env:
-          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-test
+          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.ODOO_VERSION }}-test
           SKIP_BUILD: true
         run: ./unit-tests.sh
 
@@ -80,7 +112,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ matrix.branch }},enable=true
+            type=raw,value=${{ env.IMAGE_TAG != '' && env.IMAGE_TAG || env.ODOO_VERSION }},enable=true
 
       - name: Build and push multi-arch Docker image
         if: github.event_name != 'pull_request'
@@ -90,7 +122,8 @@ jobs:
           context: ./src
           platforms: ${{ env.TARGET_PLATFORMS }}
           build-args: |
-            ODOO_VERSION=${{ matrix.branch }}
+            ODOO_VERSION=${{ env.ODOO_VERSION }}
+            ODOO_REPOSITORY=${{ env.ODOO_REPOSITORY }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true
