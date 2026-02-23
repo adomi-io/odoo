@@ -81,7 +81,6 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.ODOO_VERSION }}-test
           push: false
           load: true
-          cache-to: type=gha,mode=max
 
       - name: Run unit tests
         working-directory: tests
