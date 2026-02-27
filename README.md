@@ -10,27 +10,14 @@
 
 # Adomi-io - Odoo
 
-This image is designed for developers, infrastructure teams, and companies that want to deploy 
+This is an Odoo docker image which is built nightly from the Odoo community GitHub.
+
+The goal of this repository is to provide a starting point for developers, infrastructure teams, and companies that want to deploy 
 Odoo on cloud platforms, build SaaS or IaaS products around it, or use Odoo as the foundation 
 for their own custom software.
 
-This image exists to turn Odoo into a repeatable, shippable unit.
-It allows you to fully own your Odoo deployments. We encourage you to fork this 
-repository and customize it to your needs.
-
-Your code, your addons, your config, mounted into this image 
-will allow you to build a production-ready image which runs the same on a laptop, 
-a staging box, or a cloud cluster, for one customer or a thousand. 
-
-You get a clean development environment that works with modern IDEs, 
-supports breakpoints, and mirrors production. Every developer can have their own local
-copy of Odoo, and they can be sure their code will run in production exactly the same way
-as on their local machine.
-
-When you are ready to deploy, you can push your code with CI/CD to any Docker repository provider,
-and the same image goes to your cloud or on-premise deployments, without surprise differences between environments.
-
-
+You can copy this repository and use it as a starting point for your own projects, or build down-stream images which extend
+this image.
 
 > [!NOTE]
 > Adomi is an Odoo partner and consulting company. This image serves as a foundation for our open-source Odoo projects.
@@ -45,13 +32,14 @@ and the same image goes to your cloud or on-premise deployments, without surpris
 
 # Highlights
 
-This image uses `envsubst` with environment variables to dynamically generate your Odoo configuration on the fly. 
+This image uses `envsubst` with environment variables to dynamically generate your Odoo configuration on the fly, 
+ more closely aligning Odoo with [12factor principals](https://12factor.net/config). 
 This lets you customize your deployments without modifying the base image, streamlining your build process, 
 and scaling your instances effortlessly.
 
 - 🔧 [**Dynamic Configuration**](#dynamic-configuration): Generate your Odoo configuration on the fly using `envsubst`, giving you flexible, environment-driven deployments without modifying the base image.
 - 📦 [**Easy Enterprise Integration**](#extending-this-image-with-odoo-enterprise): Seamlessly extend the base image to support Odoo Enterprise.
-- 🛠️ [**Extensible by Design**](#extending-this-image): Clean extension points make it simple to add custom modules or tailor the image for your stack.
+- 🛠️ [**Extensible by Design**](#extending-this-image): Clean extension points make it simple to add custom modules or tailor the image for your stack and build downstream images.
 - 🧱 [**Multi-Stage Dockerfile**](./src/Dockerfile): A transparent, well-documented build process powered by a multi-stage Dockerfile.
 - 🤖 [**Automated CI/CD Pipeline**](./.github/workflows/docker-publish.yml): Fully automated builds via GitHub Actions keep your image consistent and up-to-date.
 - 🧪 [**Robust Unit Testing**](./tests/unit-tests.sh): Open, reliable test coverage ensures your Odoo deployments stay stable.
@@ -67,73 +55,9 @@ and scaling your instances effortlessly.
 
 ### Docker Compose
 
-This Docker Compose file will launch a copy of Odoo along 
-with a Postgres database. Use this to get started.
+You can copy the `./docker` folder to a folder and run `docker compose up -d`
 
-Copy this file to a folder:
-
-[docker-compose.yml](./docker/docker-compose.yml)
-
-Then run `docker compose up`
-
-```yaml
-services:
-  odoo:
-    image: ghcr.io/adomi-io/odoo:19.0
-    restart: unless-stopped 
-    ports:
-      - "8069:8069"
-      - "8072:8072"
-    environment:
-      # Configure your instances
-      ODOO_DB_HOST: ${DB_HOST:-db}
-      ODOO_DB_PORT: ${DB_PORT:-5432}
-      ODOO_DB_USER: ${DB_USER:-odoo}
-      ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
-      # Add additional options here, eg:
-      # ODOO_WORKERS: ${ODOO_WORKERS:-0}
-      # ODOO_MAX_CRON_THREADS: ${ODOO_MAX_CRON_THREADS:-0}
-      # ODOO_ADDONS_PATH: /volumes/my-custom-addon-folder
-    volumes:
-      # Mount your addons
-      - ./addons:/volumes/addons
-      
-      # Persist Odoo Data
-      - odoo_data:/volumes/data
-      
-      # Add enterprise
-      # - ./enterprise:/volumes/enterprise
-        
-      # Mount a custom config
-      # - ./src/odoo.conf:/volumes/config/odoo.conf
-      
-      # Add additional addons like OCA packages or sub-modules
-      # - ./sub-modules:/volumes/extra_addons
-    depends_on:
-      - db
-  db:
-    image: postgres:13
-    container_name: odoo_db
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-odoo}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
-      POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-volumes:
-  odoo_data:
-  pg_data:
-```
-
-
-If you want to always have Odoo running, 
-start the image in detached mode by adding the `-d` flag
-
-```shell
-docker compose up -d
-```
+[Docker Compose](./docker)
 
 ### Docker
 This is a simple example of how to run Odoo with Postgres if you are using Docker directly, without Docker Compose.
@@ -176,73 +100,10 @@ docker pull ghcr.io/adomi-io/odoo:19.0
 |----------------------------------------------------|----------------------------------------------|
 | [19.0](https://github.com/adomi-io/odoo/tree/19.0) | ```docker pull ghcr.io/adomi-io/odoo:19.0``` |
 
-# Configure your container
-> [!TIP]
-> This lets you run multiple different environments (e.g., development, staging, production) with ease.
-> For example, you can create a `.env.production` file for production deployments.
-
-> [!TIP]
-> If you use Docker BuildKit, you do not need to specify the `env_file` 
-> directive in your `docker-compose.yml` file if the file is named `.env`.
-
-Manage your configuration in a `.env` file.
-
-By placing your sensitive data in this file and adding it to your `.gitignore`, 
-you keep secrets out of your command line and source code.
-
-## Docker Compose
-
-1. **Create a `.env` file:**  
-   Place your `.env` file in the same directory as your `docker-compose.yml` file. 
-
-2. **Reference the env file in your Docker Compose file:**  
-   You can explicitly reference the env file using the `env_file` directive:
-
-```yaml
-services:
-    odoo:
-      image: ghcr.io/adomi-io/odoo:19.0
-      ports:
-        - "8069:8069"
-      env_file:
-        - .env
-```
-
-When you run `docker compose up`, Docker Compose will load the environment variables from the specified file, keeping your configuration tidy and secure.
-
-Using an `.env` file makes it easy to manage environment-specific settings and ensures your sensitive data isn’t hard-coded into your commands or configuration files. 
-
-
-## Docker
-
-1. **Create a `.env` file:**  
-   Define your environment variables in a file named `.env` (or any name you choose). For example:
-
-```env
-ODOO_DB_HOST=odoo_db
-ODOO_DB_PORT=5432
-ODOO_DB_USER=odoo
-ODOO_DB_PASSWORD=odoo
-```
-
-2. **Run your image using the env file:**  
-   Use the `--env-file` flag with `docker run`:
-
-```bash
-docker run --name odoo \
- --env-file .env \
- -p 8069:8069 \
- ghcr.io/adomi-io/odoo:19.0
-```
-
-This command loads all the variables from your `.env` file into the image.
-
-You can use multiple `.env` files to separate configuration for different environments.
-
 ## Using Secret Files
 
 > [!NOTE]
-> The file name is case-insensitive inside the image. odoo_db_password and ODOO_DB_PASSWORD are equivalent.
+> The file name will be transformed to upper-case in the environment, making odoo_db_password become ODOO_DB_PASSWORD.
 
 Keep your sensitive data secure by mounting secret files into `/run/secrets/`. 
 
@@ -418,20 +279,72 @@ docker compose up --build
 
 ## Extra Addons
 
-You may have extra addons which you just want to use, not develop for. 
+This folder is located at `/volumes/extra_addons`.
 
-Rather than force you to put external packages or submodules
-in your `addons` folder, which can get overwhelming in larger projects, 
-this image has an optional volume at `/volumes/extra_addons`.
+The extra addons folder is where you can place down-stream addons that you want to build into an image.
+This allows you to add addons that are baked into the image (for example, OCA packages), sub-modules, or external addons
+and allow the end user to folder-mount their addons into the `/volumes/addons` folder.
 
-If there is a directory loaded to `/volumes/extra_addons`, the entrypoint script will automatically add it 
-to the Odoo addons path.
 
 ```dockerfile
 FROM ghcr.io/adomi-io/odoo:19.0
 
 # Copy your submodules and external addons into the folder located at /volumes/extra_addons
-COPY ./oca/addons /volumes/extra_addons
+COPY ./extra_addons /volumes/extra_addons
+```
+
+You can use this to automatically download and build OCA packages and git sub-modules into your image, for example:
+
+```dockerfile
+ARG ODOO_IMAGE=ghcr.io/adomi-io/odoo:19.0
+
+# We will use this base image to build OCA packages
+FROM alpine:3.20 AS oca_base
+
+RUN apk add --no-cache \
+    git
+
+# We will clone our OCA packages into /tmp/oca
+WORKDIR /tmp/oca
+
+FROM oca_base AS oca_server_brand
+
+# We will move all the folders we want to use into /tmp/extra_addons
+# This lets us selectively copy the folders we want into the image, and just copy one folder
+# in the final image
+RUN mkdir -p /tmp/extra_addons
+
+# Clone the server-brand addon, and select which folders we want, by copying them
+#  into /tmp/extra_addons
+RUN git clone \
+        --depth 1 \
+        --branch 19.0 \
+        https://github.com/OCA/server-brand.git \
+        /tmp/oca/server-brand \
+    && cp -a \
+        /tmp/oca/server-brand/disable_odoo_online \
+        /tmp/extra_addons/ \
+    && cp -a \
+        /tmp/oca/server-brand/mail_debranding \
+        /tmp/extra_addons/ \
+    && cp -a \
+        /tmp/oca/server-brand/portal_debranding \
+        /tmp/extra_addons/ \
+    && cp -a \
+        /tmp/oca/server-brand/sale_portal_debranding \
+        /tmp/extra_addons/ \
+    && cp -a \
+        /tmp/oca/server-brand/website_debranding \
+        /tmp/extra_addons/
+
+# Build our final local image, which will include the OCA addons
+FROM ${ODOO_IMAGE}
+
+# Copy OCA addons into the extra addons folder first
+COPY --from=oca_server_brand /tmp/extra_addons/ /volumes/extra_addons/
+
+# Then copy local ./extra_addons into extra_addons in the image, giving our local file system priority
+COPY ./extra_addons/ /volumes/extra_addons/
 ```
 
 # Dynamic Configuration
