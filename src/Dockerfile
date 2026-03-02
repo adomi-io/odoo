@@ -278,16 +278,11 @@ EXPOSE 8069 8071 8072
 # Set the work directory to volumes directory where all of our Odoo data is stored
 WORKDIR /volumes
 
-# Create a non-root user for better isolation; we chown only the writable mounts
-RUN set -eux; \
-    chown -R "${UID}:${GID}" /volumes || true
-
 # Add a healthcheck that pings Odoo's health endpoint; this helps orchestrators know when the app is ready
 HEALTHCHECK --interval=30s --timeout=5s --retries=5 \
   CMD curl -fsS "http://127.0.0.1:${ODOO_HTTP_PORT:-8069}/web/health" || exit 1
 
-# Set the user
-USER ${UID:-1000}:${GID:-1000}
+USER ubuntu
 
 # Get things started
 # We run through tini to properly handle signals and PID 1 semantics
