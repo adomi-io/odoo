@@ -69,24 +69,23 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image for testing
-        id: build
-        if: ${{ !env.SKIP_UNIT_TESTS }}
+      - name: Build image for unit tests
+        id: build-and-push
         uses: docker/build-push-action@v5
         with:
           context: ./src
+          platforms: ${{ env.TARGET_PLATFORMS }}
           build-args: |
             ODOO_VERSION=${{ env.ODOO_VERSION }}
             ODOO_REPOSITORY=${{ env.ODOO_REPOSITORY }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.ODOO_VERSION }}-test
-          push: false
-          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Run unit tests
         working-directory: tests
         if: ${{ !env.SKIP_UNIT_TESTS }}
         env:
-          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.ODOO_VERSION }}-test
+          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.ODOO_VERSION }}
           SKIP_BUILD: true
         run: ./unit-tests.sh
 
@@ -119,4 +118,4 @@ jobs:
             ODOO_REPOSITORY=${{ env.ODOO_REPOSITORY }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          push: true
+          load: true
