@@ -6,7 +6,7 @@ services:
     ports:
       - "8069:8069"
     environment:
-      ODOO_DB_HOST: ${DB_HOST:-db}
+      ODOO_DB_HOST: ${DB_HOST:-odoo_db}
       ODOO_DB_PORT: ${DB_PORT:-5432}
       ODOO_DB_USER: ${DB_USER:-odoo}
       ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
@@ -18,8 +18,9 @@ services:
       # Uncomment this to add enterprise at run-time:
 #      - ./enterprise:/volumes/enterprise
     depends_on:
-      - db
-  db:
+      odoo_db:
+        condition: service_healthy
+  odoo_db:
     image: postgres:13
     container_name: odoo_db
     environment:
@@ -28,11 +29,14 @@ services:
       POSTGRES_DB: ${POSTGRES_DATABASE:-postgres}
     volumes:
       - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     ports:
       - "5432:5432"
-secrets:
-  gh_token:
-    environment: GH_TOKEN
+
 volumes:
   odoo_data:
   pg_data:
