@@ -70,7 +70,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build image for unit tests
-        id: build-and-push
+        id: build-testing-image
         uses: docker/build-push-action@v5
         with:
           context: ./src
