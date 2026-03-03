@@ -224,7 +224,7 @@ SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 # If you set these, these values are baked into the container.
 # This means they will be the default if no other environment variable is specified at run-time.
 ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
-    ODOO_ADDONS_PATH="/odoo/odoo/addons,/odoo/addons,/volumes/addons" \
+    ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
     ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
     ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
     SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
