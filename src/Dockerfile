@@ -162,7 +162,8 @@ RUN npm install --force -g rtlcss@3.4.0
 
 # Create the data locations used by default, and create a default empty configuration file at _generated.conf
 RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
-    && echo "[options]" > /volumes/config/_generated.conf
+    && echo "[options]" > /volumes/config/_generated.conf \
+    && chown -R ${UID}:${GID} /volumes
 
 # The /venv folder will house our Python virtual environment
 WORKDIR /venv
@@ -203,8 +204,9 @@ RUN mkdir -p "/usr/lib/python3/dist-packages/addons"
 # This is the final container that will run the Odoo process
 FROM setup
 
-# Expose the volumes to allow users to mount these folders directly
-VOLUME ["/volumes/data", "/volumes/addons", "/volumes/config", "/volumes/enterprise", "/volumes/extra_addons"]
+# Redefine UID and GID for the final stage
+ARG UID=1000
+ARG GID=1000
 
 # Docker labels
 LABEL maintainer="Adomi Software, LLC <github@adomisoftware.com>" \
@@ -253,7 +255,7 @@ RUN set -eux; \
     ln -sf /odoo/odoo-bin "${SITE_PACKAGES}/odoo-bin"
 
 # Copy the odoo config into the default location
-COPY odoo.conf /volumes/config/odoo.conf
+COPY --chown=${UID}:${GID} odoo.conf /volumes/config/odoo.conf
 
 # Copy the entrypoint into the container.
 # The entry point is the script that runs when the Docker container is spun up
@@ -290,3 +292,6 @@ ENTRYPOINT ["/usr/bin/tini", "-g", "--", "/entrypoint.sh"]
 
 # Run the Odoo command
 CMD ["odoo-bin"]
+
+# Expose the volumes to allow users to mount these folders directly.
+VOLUME ["/volumes/data", "/volumes/addons", "/volumes/enterprise", "/volumes/extra_addons"]
