@@ -1,6 +1,7 @@
 > [!TIP]
-> Want to see a project built with this image? 
-> Check out [Listing Lab](https://github.com/adomi-io/listing-lab) for a complete example
+> Want to get started with this image? We have a boilerplate that lets you get started with just a couple clicks 
+> 
+> **[Odoo Boilerplate](https://github.com/adomi-io/odoo-boilerplate)**
 
 
 <p align="center">
@@ -8,7 +9,7 @@
 </p>
 
 
-# Adomi-io - Odoo
+# Adomi - Odoo
 
 This is an Odoo docker image which is built nightly from the Odoo community GitHub.
 
