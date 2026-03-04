@@ -165,7 +165,7 @@ This command drops you right into the image's shell for quick debugging or tweak
 
 > [!TIP]
 > Want to see a project which extends with this image? 
-> Check out [Listing Lab](https://github.com/adomi-io/listing-lab) for a complete example
+> Check out [our community base image](https://github.com/adomi-io/odoo-community-base) for a complete example
 
 Customize your own image by setting default environment variables,
 baking your Odoo config, and adding your custom addons. 
@@ -188,7 +188,7 @@ FROM ghcr.io/adomi-io/odoo:19.0
 # COPY odoo.conf /volumes/config/odoo.conf
 
 # Copy your custom addons into the image
-COPY . /volumes/addons
+COPY addons /volumes/addons
 ```
 
 Instead of using the `image` tag in your `docker-compose.yml`, 
