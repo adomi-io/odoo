@@ -1,3 +1,4 @@
 [submodule "docker"]
 	path = get-started
 	url = https://github.com/adomi-io/odoo-boilerplate.git
+    branch = master

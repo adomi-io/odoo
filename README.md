@@ -474,7 +474,7 @@ For example:
 ```ini
 [options]
 # Hard-code a value by entering the config name
-db_host = my-hardcoded-database.abc-corp.com
+db_host = "my-hardcoded-database.abc-corp.com"
 workers = 2
 
 # Defer to the environment variable by using the name of the config prefixed with ODOO_
@@ -497,7 +497,9 @@ services:
     image: ghcr.io/adomi-io/odoo:19.0
     # ...
     volumes:
-      - ./config/odoo.conf:/volumes/config/odoo.conf # Add this to your docker compose configuration
+      # Add this to your docker compose configuration to 
+      # mount your configuration file at runtime
+      - ./config/odoo.conf:/volumes/config/odoo.conf
 ```
 
 ### Docker
@@ -508,7 +510,7 @@ Add the `-v $(pwd)/config/odoo.conf:/volumes/config/odoo.conf` flag to your `doc
 docker run -d \
   --name odoo \
   -p 8069:8069 \
-  -v $(pwd)/odoo.conf:/volumes/config/odoo.conf \
+  -v $(pwd)/config/odoo.conf:/volumes/config/odoo.conf \
   ghcr.io/adomi-io/odoo:19.0
 ```
 
@@ -525,7 +527,7 @@ ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
     SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ```
 
-## Building Default Configuration into the Image
+## Building configuration into the image
 
 You can set the default values for the environment variables at build-time.
 
@@ -553,8 +555,9 @@ ENV ODOO_WORKERS=5
 
 > [!NOTE]
 > This script runs even if you’re using the image as a command-line
-> utility (e.g., `scaffold`) and executes before the `wait-for-psql`
-> script, so it doesn't guarantee that the database is reachable.
+> utility (e.g., `scaffold`) and executes before the `wait-for-psql`.
+> Downstream scripts can call the `wait-for-psql` script if you need to wait for the database to be ready.
+> and is provided the Odoo command being ran via the args.
 
 When the image starts, it processes all the environment variables and their defaults to generate a `_generated.conf` file.
 
@@ -569,20 +572,14 @@ Hooks are executed in ascending order based on the leading number in the filenam
 0.install_deps.sh
 10.configure_odoo
 ```
-
-If a hook file is executable, it will be run directly; otherwise it will be run via `/bin/bash`.
-
 Mount your hooks directory to `/hooks/setup` (or set `HOOK_SETUP_DIR` to another path).
 
 # Development with this image
 
-> [!NOTE]
-> Expand this section for detailed instructions on how to use this image with your IDE
-
 You can use this image as a development environment and debug and test your code. 
 This assumes you have the [PyCharm Odoo](https://plugins.jetbrains.com/plugin/13499-odoo) plugin by Trịnh Anh Ngọc. 
 
-If you dont already have it, consider it, its excellent!
+**Expand the following section for using this container as a development environment**
 
 <details><summary>Use this image as a development environment w/ Breakpoints</summary>
 
