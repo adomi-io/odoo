@@ -31,6 +31,8 @@ on:
     paths:
       - '**'
       - '!README.md'
+      - '!get-started/**'
+      - '!get-started'
 
 env:
   REGISTRY: ghcr.io
