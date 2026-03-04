@@ -180,7 +180,7 @@ FROM ghcr.io/adomi-io/odoo:19.0
 # USER root
 # RUN pip install stripe
 # RUN pip install -r requirements.txt
-# USER 1000
+# USER ubuntu
 
 # Optionally copy your custom config file
 # COPY odoo.conf /volumes/config/odoo.conf
@@ -218,7 +218,7 @@ docker compose build && docker compose up
 
 ### Python
 
-A virtual environment is already set up at `/venv` inside the image, with Odoo and its dependencies installed. 
+A virtual environment is set up at `/venv` inside the image, with Odoo and its dependencies installed. 
 This means you can run Python commands as usual:
 
 ```dockerfile
@@ -347,6 +347,10 @@ COPY --from=oca_server_brand /tmp/extra_addons/ /volumes/extra_addons/
 # Then copy local ./extra_addons into extra_addons in the image, giving our local file system priority
 COPY ./extra_addons/ /volumes/extra_addons/
 ```
+
+> [!TIP]
+> Check out our [Community Base Image](https://github.com/adomi-io/odoo-community-base) for an example
+> of a downstream image which makes use of the extra_addons folder
 
 # Dynamic Configuration
 
@@ -543,7 +547,7 @@ ENV ODOO_WORKERS=5
 > [!TIP]
 > This feature is useful for automatically installing apps when the container first starts
 >
-> [**See our example hook_setup.sh script**](https://github.com/adomi-io/listing-lab/blob/master/hooks/hook_setup.sh) from [**Listing Lab**](https://github.com/adomi-io/listing-lab/tree/master)
+> [**See our example hook script**](https://github.com/adomi-io/odoo-community-base/blob/master/hooks/setup/000.setup_adomi_community.sh) from our [**Community base image**](https://github.com/adomi-io/odoo-community-base)
 
 > [!NOTE]
 > This script runs even if you’re using the image as a command-line
