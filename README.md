@@ -22,6 +22,20 @@ for their own custom software.
 You can copy this repository and use it as a starting point for your own projects, or build down-stream images which extend
 this image.
 
+
+> [!TIP]
+> Upstream source code
+> 
+> - [odoo/odoo](https://github.com/odoo/odoo)
+ 
+> [!TIP]
+> Example downstream images
+> 
+> - [adomi-io/odoo-boilerplate](https://github.com/adomi-io/odoo-boilerplate) 
+> - [adomi-io/odoo-community-base](https://github.com/adomi-io/odoo-community-base)
+> - [adomi-io/listing-lab](https://github.com/adomi-io/listing-lab)
+
+
 > [!NOTE]
 > Adomi is an Odoo partner and consulting company. This image serves as a foundation for our open-source Odoo projects.
 > We offer custom software development, consulting, tools, and training services built
