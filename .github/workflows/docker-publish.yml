@@ -39,7 +39,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   ODOO_VERSION: 19.0
   ODOO_REPOSITORY: https://github.com/odoo/odoo.git
-  SKIP_UNIT_TESTS: true # Default for scheduled/push builds; can be overridden for workflow_dispatch.
+  SKIP_UNIT_TESTS: false
   TARGET_PLATFORMS: linux/amd64
 
 jobs:
