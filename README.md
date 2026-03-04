@@ -58,11 +58,12 @@ and scaling your instances effortlessly.
 >
 >**[Download Docker Desktop](https://www.docker.com/products/docker-desktop/)**
 
-### Docker Compose
 
-You can copy the `./docker` folder to a folder and run `docker compose up -d`
+Click here to get started, by taking a copy of our [boilerplate repository](https://github.com/adomi-io/odoo-boilerplate):
 
-[Docker Compose](./docker)
+**[Create a repository from adomi-io/boilerplate-odoo](https://github.com/new?template_name=odoo-boilerplate&template_owner=adomi-io)**
+
+Add your addons to the `addons` folder, and run `docker compose up` to start your Odoo instance.
 
 ### Docker
 This is a simple example of how to run Odoo with Postgres if you are using Docker directly, without Docker Compose.
