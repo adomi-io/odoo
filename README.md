@@ -35,12 +35,6 @@ this image.
 > - [adomi-io/odoo-community-base](https://github.com/adomi-io/odoo-community-base)
 > - [adomi-io/listing-lab](https://github.com/adomi-io/listing-lab)
 
-
-> [!NOTE]
-> Adomi is an Odoo partner and consulting company. This image serves as a foundation for our open-source Odoo projects.
-> We offer custom software development, consulting, tools, and training services built
-> for modern software development teams using open-source software and methodologies
-
 > [!WARNING]
 > This is not the official Odoo image. This image is a community-maintained Odoo image.
 > For those seeking the official image, please visit 
@@ -694,6 +688,12 @@ Finally, run the unit test script:
 ```sh
 ./tests/unit-tests.sh
 ```
+
+# Adomi
+> Adomi is an Odoo partner and consulting company. This image serves as a foundation for our open-source Odoo projects.
+> We offer custom software development, consulting, tools, and training services built
+> for modern software development teams using open-source software and methodologies
+
 
 # License
 
