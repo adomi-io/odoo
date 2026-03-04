@@ -1,5 +1,5 @@
 > [!TIP]
-> ** Want to get started with this image? ** 
+> **Want to get started with this image?** 
 > 
 > We have a boilerplate that lets you get started with just a couple clicks 
 > 
