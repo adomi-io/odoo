@@ -160,11 +160,6 @@ COPY --from=geolite /geolite /usr/share/GeoIP
 # Install our Javascript dependencies
 RUN npm install --force -g rtlcss@3.4.0
 
-# Create the data locations used by default, and create a default empty configuration file at _generated.conf
-RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
-    && echo "[options]" > /volumes/config/_generated.conf \
-    && chown -R ${UID}:${GID} /volumes
-
 # The /venv folder will house our Python virtual environment
 WORKDIR /venv
 
@@ -227,6 +222,7 @@ ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
     ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
     ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
     ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
+    ODOO_ADDONS_PATH="/odoo/odoo/addons,/odoo/addons,/volumes/data/addons/19.0" \
     SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 
 # Set the current directory to the Odoo folder.
@@ -235,13 +231,6 @@ WORKDIR /odoo
 
 # Copy the code from the source-fetching container and copy it into the Odoo folder
 COPY --from=source /source/odoo/ .
-
-# Install Odoo into the venv.
-# NOTE: Avoid editable installs (`-e`) because they introduce `__editable__...` path hook
-# entries into `odoo.addons.__path__`, and Odoo's own unit tests expect all addons paths
-# to be real directories.
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install .
 
 # Add odoo-bin to the global applications
 RUN chmod +x /odoo/odoo-bin \
@@ -285,6 +274,10 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=5 \
   CMD curl -fsS "http://127.0.0.1:${ODOO_HTTP_PORT:-8069}/web/health" || exit 1
 
 USER ubuntu
+
+# Create the data locations used by default, and create a default empty configuration file at _generated.conf
+RUN mkdir -p /volumes/config /volumes/data /volumes/addons \
+    && echo "[options]" > /volumes/config/_generated.conf
 
 # Get things started
 # We run through tini to properly handle signals and PID 1 semantics

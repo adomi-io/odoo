@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8069:8069"
+    user: "${UID}:${GID}"
     environment:
       ODOO_DB_HOST: ${DB_HOST:-odoo_db}
       ODOO_DB_PORT: ${DB_PORT:-5432}
@@ -12,6 +13,7 @@ services:
       ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
     volumes:
       - ./src/odoo.conf:/volumes/config/odoo.conf
+      - ./tests/config:/volumes/config
       - ./addons:/volumes/addons
       - ./hooks:/hooks
       - odoo_data:/volumes/data
