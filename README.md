@@ -560,7 +560,7 @@ ENV ODOO_WORKERS=5
 > This script runs even if you’re using the image as a command-line
 > utility (e.g., `scaffold`) and executes before the `wait-for-psql`.
 > Downstream scripts can call the `wait-for-psql` script if you need to wait for the database to be ready.
-> and is provided the Odoo command being ran via the args.
+> The cli commands are provided to the setup script via its args. 
 
 When the image starts, it processes all the environment variables and their defaults to generate a `_generated.conf` file.
 
