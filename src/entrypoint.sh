@@ -210,18 +210,18 @@ envsubst < "${IMAGE_CONFIG_LOCATION}" > "${ODOO_RC}"
 /hook_setup "$@"
 
 case "$1" in
-  -- | odoo)
+  -- | odoo-bin)
     shift
     if [ "$1" = "scaffold" ]; then
-      exec odoo "$@"
+      exec odoo-bin "$@"
     else
       wait-for-psql.py "$@"
-      exec odoo "$@"
+      exec odoo-bin "$@"
     fi
     ;;
   -*)
     wait-for-psql.py "$@"
-    exec odoo "$@"
+    exec odoo-bin "$@"
     ;;
   *)
     exec "$@"
