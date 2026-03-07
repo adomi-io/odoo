@@ -222,7 +222,7 @@ ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
     ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
     ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
     ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
-    ODOO_ADDONS_PATH="/odoo/addons,/odoo/odoo/addons,/volumes/data/addons/19.0" \
+    ODOO_ADDONS_PATH="/volumes/addons,/volumes/data/addons/19.0,/volumes/extra_addons,/volumes/enterprise,/odoo/addons,/odoo/odoo/addons" \
     SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 
 # Set the current directory to the Odoo folder.

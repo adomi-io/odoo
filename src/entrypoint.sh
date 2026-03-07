@@ -155,30 +155,6 @@ export ODOO_LIMIT_TIME_REAL="${ODOO_LIMIT_TIME_REAL:-120}"
 export ODOO_LIMIT_TIME_REAL_CRON="${ODOO_LIMIT_TIME_REAL_CRON:--1}"
 export ODOO_LIMIT_REQUEST="${ODOO_LIMIT_REQUEST:-65536}"
 
-# Docker Specific configuration
-export IMAGE_ODOO_ENTERPRISE_LOCATION="${IMAGE_ODOO_ENTERPRISE_LOCATION:-/volumes/enterprise}"
-export IMAGE_EXTRA_ADDONS_LOCATION="${IMAGE_EXTRA_ADDONS_LOCATION:-/volumes/extra_addons}"
-
-if [ -d "$IMAGE_ODOO_ENTERPRISE_LOCATION" ] && \
-   [ -n "$(find "$IMAGE_ODOO_ENTERPRISE_LOCATION" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
-  echo "Odoo Enterprise detected with content"
-  if [ -z "$ODOO_ADDONS_PATH" ]; then
-    export ODOO_ADDONS_PATH="$IMAGE_ODOO_ENTERPRISE_LOCATION"
-  else
-    export ODOO_ADDONS_PATH="$IMAGE_ODOO_ENTERPRISE_LOCATION,$ODOO_ADDONS_PATH"
-  fi
-fi
-
-if [ -d "$IMAGE_EXTRA_ADDONS_LOCATION" ] && \
-   [ -n "$(find "$IMAGE_EXTRA_ADDONS_LOCATION" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
-  echo "Additional addons have been detected with content"
-  if [ -z "$ODOO_ADDONS_PATH" ]; then
-    export ODOO_ADDONS_PATH="$IMAGE_EXTRA_ADDONS_LOCATION"
-  else
-    export ODOO_ADDONS_PATH="$IMAGE_EXTRA_ADDONS_LOCATION,$ODOO_ADDONS_PATH"
-  fi
-fi
-
 IMAGE_SECRETS_DIR="${IMAGE_SECRETS_DIR:-/run/secrets}"
 
 if [ -d "$IMAGE_SECRETS_DIR" ]; then
