@@ -6,21 +6,30 @@ FROM alpine AS source
 
 ARG ODOO_VERSION=19.0
 ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
+ARG SPECIFIC_DATE
+ARG SPECIFIC_HASH
 
-# Install required packages: curl, jq, and tar (or unzip if needed)
 RUN apk add --no-cache git ca-certificates && update-ca-certificates
 
-# The source code will be stored in /source/odoo
-WORKDIR /source
+WORKDIR /source/odoo
 
-# Grab the latest source from GitHub
-# We add a cache mount for git to speed up repeated builds
 RUN --mount=type=cache,target=/root/.cache/git \
-    git clone  \
-    --branch ${ODOO_VERSION}  \
-    --single-branch  \
-    --depth 1  \
-    ${ODOO_REPOSITORY}
+    set -eu; \
+    git init .; \
+    git remote add origin "${ODOO_REPOSITORY}"; \
+    if [ -n "${SPECIFIC_HASH:-}" ]; then \
+        git fetch --depth 1 origin "${SPECIFIC_HASH}"; \
+        git checkout FETCH_HEAD; \
+    elif [ -n "${SPECIFIC_DATE:-}" ]; then \
+        git fetch origin "${ODOO_VERSION}"; \
+        REV_HASH="$(git rev-list -n 1 --before="${SPECIFIC_DATE}" "FETCH_HEAD")"; \
+        test -n "${REV_HASH}"; \
+        git checkout "${REV_HASH}"; \
+    else \
+        git fetch --depth 1 origin "${ODOO_VERSION}"; \
+        git checkout FETCH_HEAD; \
+    fi; \
+    rm -rf .git
 
 # This build step will go download the latest version
 # of wkhtmltopdf (keep your eyes on https://github.com/odoo/paper-muncher)
