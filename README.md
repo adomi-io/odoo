@@ -32,6 +32,7 @@ this image.
 > Example downstream images
 > 
 > - [adomi-io/odoo-boilerplate](https://github.com/adomi-io/odoo-boilerplate) 
+> - [adomi-io/odoo-enterprise-boilerplate](https://github.com/adomi-io/odoo-enterprise-boilerplate)
 > - [adomi-io/odoo-community-base](https://github.com/adomi-io/odoo-community-base)
 > - [adomi-io/listing-lab](https://github.com/adomi-io/listing-lab)
 
@@ -236,9 +237,17 @@ This lets you easily extend and customize the image to fit your development need
 
 # Extending This Image with Odoo Enterprise
 
+> [!TIP]
+> **Have access to Odoo Enterprise?**
+> 
+> We offer a template you can copy which will help you get started with Odoo Enterprise. 
+> Using this template will automatically build you an internal Odoo Enterprise image.
+> 
+> - [adomi-io/odoo-enterprise-boilerplate](https://github.com/adomi-io/odoo-enterprise-boilerplate)
+
 ## Odoo Partners
 
-If you're an Odoo Partner (or have GitHub access), extending your image is a breeze. 
+If you're an Odoo Partner (or have GitHub access) and prefer to build your own image,
 First, clone the Enterprise repository into your project's root:
 
 ```bash
