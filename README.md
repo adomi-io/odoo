@@ -3,8 +3,8 @@
 > 
 > We have a boilerplate that lets you get started with just a couple clicks 
 > 
-> **[Odoo Boilerplate](https://github.com/adomi-io/odoo-boilerplate)**
-> **[Odoo Partners - Enterprise Boilerplate](https://github.com/adomi-io/odoo-enterprise-boilerplate)**
+> - **[Odoo Boilerplate](https://github.com/adomi-io/odoo-boilerplate)**
+> - **[Odoo Enterprise Boilerplate (Partners)](https://github.com/adomi-io/odoo-enterprise-boilerplate)**
 
 
 <p align="center">
