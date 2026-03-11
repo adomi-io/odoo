@@ -168,9 +168,15 @@ This command drops you right into the image's shell for quick debugging or tweak
 
 # Extending This Image
 
+
 > [!TIP]
-> Want to see a project which extends with this image? 
-> Check out [our community base image](https://github.com/adomi-io/odoo-community-base) for a complete example
+> **Want to lower your license costs?**
+> 
+> Try our [odoo-community-base](https://github.com/adomi-io/odoo-community-base) base image
+> which includes some helpful OCA packages and additional addons. Set the `ODOO_BASE_IMAGE` arg to:
+> ```md
+> ghcr.io/adomi-io/odoo-community-base:latest
+> ```
 
 Customize your own image by setting default environment variables,
 baking your Odoo config, and adding your custom addons. 
@@ -239,12 +245,15 @@ This lets you easily extend and customize the image to fit your development need
 # Extending This Image with Odoo Enterprise
 
 > [!TIP]
-> **Have access to Odoo Enterprise?**
+> **Looking for Enterprise?** 
 > 
-> We offer a template you can copy which will help you get started with Odoo Enterprise. 
-> Using this template will automatically build you an internal Odoo Enterprise image.
+> First copy [adomi-io/boilerplate-odoo-enterprise](https://github.com/adomi-io/boilerplate-odoo-enterprise).
+> It will build your team a custom image with Enterprise.
 > 
-> - [adomi-io/boilerplate-odoo-enterprise](https://github.com/adomi-io/boilerplate-odoo-enterprise)
+> Set the `ODOO_BASE_IMAGE` to:
+> ```md
+> ghcr.io/your-company/your-repo-name:latest
+
 
 ## Odoo Partners
 
