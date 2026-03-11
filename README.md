@@ -3,8 +3,8 @@
 > 
 > We have a boilerplate that lets you get started with just a couple clicks 
 > 
-> - **[Odoo Boilerplate](https://github.com/adomi-io/odoo-boilerplate)**
-> - **[Odoo Enterprise Boilerplate (Partners)](https://github.com/adomi-io/odoo-enterprise-boilerplate)**
+> - **[Odoo Boilerplate](https://github.com/adomi-io/boilerplate-odoo)**
+> - **[Odoo Enterprise Boilerplate (Partners)](https://github.com/adomi-io/boilerplate-odoo-enterprise)**
 
 
 <p align="center">
@@ -32,8 +32,8 @@ this image.
 > [!TIP]
 > Example downstream images
 > 
-> - [adomi-io/odoo-boilerplate](https://github.com/adomi-io/odoo-boilerplate) 
-> - [adomi-io/odoo-enterprise-boilerplate](https://github.com/adomi-io/odoo-enterprise-boilerplate)
+> - [adomi-io/boilerplate-odoo](https://github.com/adomi-io/boilerplate-odoo) 
+> - [adomi-io/boilerplate-odoo-enterprise](https://github.com/adomi-io/boilerplate-odoo-enterprise)
 > - [adomi-io/odoo-community-base](https://github.com/adomi-io/odoo-community-base)
 > - [adomi-io/listing-lab](https://github.com/adomi-io/listing-lab)
 
@@ -61,9 +61,9 @@ and scaling your instances effortlessly.
 >**[Download Docker Desktop](https://www.docker.com/products/docker-desktop/)**
 
 
-Click here to get started, by taking a copy of our [boilerplate repository](https://github.com/adomi-io/odoo-boilerplate):
+Click here to get started, by taking a copy of our [boilerplate repository](https://github.com/adomi-io/boilerplate-odoo):
 
-**[Create a repository from adomi-io/boilerplate-odoo](https://github.com/new?template_name=odoo-boilerplate&template_owner=adomi-io)**
+**[Create a repository from adomi-io/boilerplate-odoo](https://github.com/new?template_name=boilerplate-odoo&template_owner=adomi-io)**
 
 Add your addons to the `addons` folder, and run `docker compose up` to start your Odoo instance.
 
@@ -244,7 +244,7 @@ This lets you easily extend and customize the image to fit your development need
 > We offer a template you can copy which will help you get started with Odoo Enterprise. 
 > Using this template will automatically build you an internal Odoo Enterprise image.
 > 
-> - [adomi-io/odoo-enterprise-boilerplate](https://github.com/adomi-io/odoo-enterprise-boilerplate)
+> - [adomi-io/boilerplate-odoo-enterprise](https://github.com/adomi-io/boilerplate-odoo-enterprise)
 
 ## Odoo Partners
 
