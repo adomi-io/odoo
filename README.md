@@ -24,13 +24,13 @@ You can copy this repository and use it as a starting point for your own project
 this image.
 
 
-> [!TIP]
-> Upstream source code
+> [!NOTE]
+> 
+> **Upstream source code**
 > 
 > - [odoo/odoo](https://github.com/odoo/odoo)
- 
-> [!TIP]
-> Example downstream images
+>
+> **Example downstream images**
 > 
 > - [adomi-io/boilerplate-odoo](https://github.com/adomi-io/boilerplate-odoo) 
 > - [adomi-io/boilerplate-odoo-enterprise](https://github.com/adomi-io/boilerplate-odoo-enterprise)
