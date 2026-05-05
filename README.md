@@ -6,14 +6,6 @@
 > - **[Odoo Boilerplate](https://github.com/adomi-io/boilerplate-odoo)**
 > - **[Odoo Enterprise Boilerplate (Partners)](https://github.com/adomi-io/boilerplate-odoo-enterprise)**
 
-> [!TIP]
-> **Want to lower your license costs?**
-> 
-> Try our [odoo-community-base](https://github.com/adomi-io/odoo-community-base) base image
-> which includes some helpful OCA packages and additional addons.
-> ```md
-> ghcr.io/adomi-io/odoo-community-base:latest
-> ```
 
 <p align="center">
     <img src="static/repo_header_final.png" width="580" />
@@ -31,6 +23,14 @@ for their own custom software.
 You can copy this repository and use it as a starting point for your own projects, or build down-stream images which extend
 this image.
 
+> [!TIP]
+> **Want to lower your license costs?**
+> 
+> Try our [odoo-community-base](https://github.com/adomi-io/odoo-community-base) base image
+> which includes some helpful OCA packages and additional addons.
+> ```md
+> ghcr.io/adomi-io/odoo-community-base:latest
+> ```
 
 > [!NOTE]
 > 
