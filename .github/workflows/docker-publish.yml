@@ -22,7 +22,7 @@ on:
       skip_unit_tests:
         description: 'Skip unit tests when building this image'
         type: boolean
-        default: true
+        default: false
   schedule:
     - cron: '38 3 * * *'
   push:
