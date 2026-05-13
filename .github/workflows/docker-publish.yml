@@ -22,9 +22,11 @@ on:
       skip_unit_tests:
         description: 'Skip unit tests when building this image'
         type: boolean
-        default: false
+        default: true
+
   schedule:
     - cron: '38 3 * * *'
+
   push:
     branches:
       - "19.0"
@@ -36,20 +38,16 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REGISTRY_USERNAME: ${{ github.actor }}
-  REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   IMAGE_NAME: ${{ github.repository }}
-  ODOO_VERSION: 19.0
-  ODOO_REPOSITORY: https://github.com/odoo/odoo.git
-  SKIP_UNIT_TESTS: false
-  TARGET_PLATFORMS: linux/amd64,linux/arm64
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
     concurrency:
       group: docker-${{ inputs.odoo_version || '19.0' }}
       cancel-in-progress: true
+
     permissions:
       contents: read
       packages: write
@@ -58,8 +56,9 @@ jobs:
       ODOO_VERSION: ${{ inputs.odoo_version || '19.0' }}
       ODOO_REPOSITORY: ${{ inputs.odoo_repository || 'https://github.com/odoo/odoo.git' }}
       IMAGE_TAG: ${{ inputs.image_tag || '' }}
-      TARGET_PLATFORMS: ${{ inputs.target_platforms || 'linux/amd64' }}
-      SKIP_UNIT_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_unit_tests || true }}
+      TARGET_PLATFORMS: ${{ inputs.target_platforms || 'linux/amd64,linux/arm64' }}
+      SKIP_UNIT_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_unit_tests || false }}
+      TEST_IMAGE_TAG: ghcr.io/${{ github.repository }}:${{ inputs.image_tag != '' && inputs.image_tag || inputs.odoo_version || '19.0' }}
 
     steps:
       - name: Checkout repository
@@ -71,23 +70,31 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ env.IMAGE_TAG != '' && env.IMAGE_TAG || env.ODOO_VERSION }},enable=true
+
       - name: Build image for unit tests
-        id: build-testing-image
+        if: ${{ env.SKIP_UNIT_TESTS != 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: ./src
-          platforms: ${{ env.TARGET_PLATFORMS }}
+          platforms: linux/amd64
           build-args: |
             ODOO_VERSION=${{ env.ODOO_VERSION }}
             ODOO_REPOSITORY=${{ env.ODOO_REPOSITORY }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ env.TEST_IMAGE_TAG }}
+          load: true
 
       - name: Run unit tests
+        if: ${{ env.SKIP_UNIT_TESTS != 'true' }}
         working-directory: tests
-        if: ${{ !env.SKIP_UNIT_TESTS }}
         env:
-          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.ODOO_VERSION }}
+          TESTS_IMAGE_TAG: ${{ env.TEST_IMAGE_TAG }}
           SKIP_BUILD: true
         run: ./unit-tests.sh
 
@@ -96,17 +103,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ env.REGISTRY_USERNAME}}
-          password: ${{ env.REGISTRY_PASSWORD }}
-
-      - name: Extract Docker metadata
-        if: github.event_name != 'pull_request'
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ env.IMAGE_TAG != '' && env.IMAGE_TAG || env.ODOO_VERSION }},enable=true
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push multi-arch Docker image
         if: github.event_name != 'pull_request'
@@ -120,4 +118,4 @@ jobs:
             ODOO_REPOSITORY=${{ env.ODOO_REPOSITORY }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          load: true
+          push: true
