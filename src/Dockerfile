@@ -269,6 +269,10 @@ COPY hook_setup /
 # Ensure the hook is executable even if the file mode was lost in transit.
 RUN chmod +x /hook_setup
 
+# Bake the default setup hooks into the image.
+COPY hooks/ /hooks/
+RUN chmod -R +x /hooks
+
 # The wait-for-psql script waits for Postgres to start accepting connections
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
