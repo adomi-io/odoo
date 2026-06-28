@@ -24,10 +24,12 @@ if [[ -z "${ODOO_INIT}" && -z "${ODOO_UPDATE}" ]]; then
 fi
 
 ODOO_DB_NAME="${ODOO_DB_NAME:-odoo}"
+
 # The entrypoint generated and exported the real config before invoking hooks.
 ODOO_RC="${ODOO_RC:-/etc/odoo/odoo.conf}"
 
 echo "[hook:odoo_init] waiting for Postgres at ${ODOO_DB_HOST:-?}:${ODOO_DB_PORT:-5432} ..."
+
 # Setup hooks run before the entrypoint's own wait-for-psql, so wait here.
 /usr/local/bin/wait-for-psql.py
 
@@ -36,5 +38,7 @@ args=( -c "${ODOO_RC}" -d "${ODOO_DB_NAME}" --stop-after-init )
 [[ -n "${ODOO_UPDATE}" ]] && args+=( -u "${ODOO_UPDATE}" )
 
 echo "[hook:odoo_init] odoo-bin ${args[*]}"
+
 odoo-bin "${args[@]}"
+
 echo "[hook:odoo_init] done."
