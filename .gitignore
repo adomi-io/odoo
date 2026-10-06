@@ -1,3 +1,4 @@
 .idea
 enterprise
 addons
+/tests/config/odoo.conf
