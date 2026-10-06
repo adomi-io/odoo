@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       odoo_version:
-        description: 'Odoo branch/tag to build (e.g., 19.0)'
+        description: 'Odoo branch/tag to build (e.g., 20.0)'
         required: false
-        default: '19.0'
+        default: '20.0'
       odoo_repository:
         description: 'Odoo git repository to clone (e.g., https://github.com/odoo/odoo.git)'
         required: false
@@ -29,7 +29,7 @@ on:
 
   push:
     branches:
-      - "19.0"
+      - "20.0"
     paths:
       - '**'
       - '!README.md'
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: docker-${{ inputs.odoo_version || '19.0' }}
+      group: docker-${{ inputs.odoo_version || '20.0' }}
       cancel-in-progress: true
 
     permissions:
@@ -53,12 +53,12 @@ jobs:
       packages: write
 
     env:
-      ODOO_VERSION: ${{ inputs.odoo_version || '19.0' }}
+      ODOO_VERSION: ${{ inputs.odoo_version || '20.0' }}
       ODOO_REPOSITORY: ${{ inputs.odoo_repository || 'https://github.com/odoo/odoo.git' }}
       IMAGE_TAG: ${{ inputs.image_tag || '' }}
       TARGET_PLATFORMS: ${{ inputs.target_platforms || 'linux/amd64,linux/arm64' }}
       SKIP_UNIT_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_unit_tests || false }}
-      TEST_IMAGE_TAG: ghcr.io/${{ github.repository }}:${{ inputs.image_tag != '' && inputs.image_tag || inputs.odoo_version || '19.0' }}
+      TEST_IMAGE_TAG: ghcr.io/${{ github.repository }}:${{ inputs.image_tag != '' && inputs.image_tag || inputs.odoo_version || '20.0' }}
 
     steps:
       - name: Checkout repository
@@ -95,7 +95,7 @@ jobs:
         working-directory: tests
         env:
           TESTS_IMAGE_TAG: ${{ env.TEST_IMAGE_TAG }}
-          SKIP_BUILD: true
+          TESTS_SKIP_BUILD: true
         run: ./unit-tests.sh
 
       - name: Log into registry

@@ -4,7 +4,7 @@
 # from odoo import release; print(release.repos_heads)
 FROM alpine AS source
 
-ARG ODOO_VERSION=19.0
+ARG ODOO_VERSION=20.0
 ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
 ARG SPECIFIC_DATE
 ARG SPECIFIC_HASH
@@ -149,6 +149,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
         libxext6 \
         libxrender1 \
         gettext \
+        libmagic1 \
         postgresql-client \
         libcairo2-dev libcairo2 \
         git \
@@ -231,7 +232,7 @@ ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
     ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
     ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
     ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
-    ODOO_ADDONS_PATH="/volumes/addons,/volumes/data/addons/19.0,/volumes/extra_addons,/volumes/enterprise,/odoo/addons,/odoo/odoo/addons" \
+    ODOO_ADDONS_PATH="/volumes/addons,/volumes/data/addons/20.0,/volumes/extra_addons,/volumes/enterprise,/odoo/addons,/odoo/odoo/addons" \
     SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 
 # Set the current directory to the Odoo folder.

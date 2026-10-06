@@ -23,7 +23,7 @@ services:
       odoo_db:
         condition: service_healthy
   odoo_db:
-    image: postgres:13
+    image: postgres:17
     container_name: odoo_db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-odoo}
