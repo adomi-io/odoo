@@ -44,8 +44,13 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        odoo_version: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.odoo_version) || '["19.0", "20.0"]') }}
+
     concurrency:
-      group: docker-${{ inputs.odoo_version || '19.0' }}
+      group: docker-${{ matrix.odoo_version }}
       cancel-in-progress: true
 
     permissions:
@@ -53,16 +58,19 @@ jobs:
       packages: write
 
     env:
-      ODOO_VERSION: ${{ inputs.odoo_version || '19.0' }}
+      ODOO_VERSION: ${{ matrix.odoo_version }}
       ODOO_REPOSITORY: ${{ inputs.odoo_repository || 'https://github.com/odoo/odoo.git' }}
       IMAGE_TAG: ${{ inputs.image_tag || '' }}
       TARGET_PLATFORMS: ${{ inputs.target_platforms || 'linux/amd64,linux/arm64' }}
       SKIP_UNIT_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_unit_tests || false }}
-      TEST_IMAGE_TAG: ghcr.io/${{ github.repository }}:${{ inputs.image_tag != '' && inputs.image_tag || inputs.odoo_version || '19.0' }}
+      TEST_IMAGE_TAG: ghcr.io/${{ github.repository }}:${{ inputs.image_tag != '' && inputs.image_tag || matrix.odoo_version }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Scheduled/push runs build each Odoo version from the branch of the same name.
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || matrix.odoo_version }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -95,7 +103,7 @@ jobs:
         working-directory: tests
         env:
           TESTS_IMAGE_TAG: ${{ env.TEST_IMAGE_TAG }}
-          SKIP_BUILD: true
+          TESTS_SKIP_BUILD: true
         run: ./unit-tests.sh
 
       - name: Log into registry
