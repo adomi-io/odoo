@@ -47,7 +47,7 @@ docker run -d \
   -e POSTGRES_USER="${TESTS_DB_USER}" \
   -e POSTGRES_PASSWORD="${TESTS_DB_PASSWORD}" \
   -e POSTGRES_DB="${TESTS_DB_NAME}" \
-  -e POSTGRES_INITDB_ARGS="--locale=en_US.utf8 --lc-collate=en_US.utf8 --lc-ctype=en_US.utf8" \
+  -e POSTGRES_INITDB_ARGS="--locale=en_US.utf8 --lc-collate=C --lc-ctype=en_US.utf8" \
   "${TESTS_POSTGRES_IMAGE}"
 
 # Wait for the postgres database to start
