@@ -1,4 +1,4 @@
-# Merge Dependabot submodule updates once the build and the unit tests have passed
+# Merge Dependabot submodule updates once every check on the pull request has passed
 # Pull requests that change workflow files cannot be merged with the workflow token
 name: Auto-merge dependency updates
 
@@ -6,6 +6,7 @@ on:
   workflow_run:
     workflows:
       - "Docker"
+      - "Get started"
     types:
       - completed
 
@@ -27,11 +28,26 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           PR_NUMBER=$(gh pr list --repo "$REPO" --head "$BRANCH" --state open --json number --jq '.[0].number')
 
           if [ -z "$PR_NUMBER" ]; then
             echo "No open pull request for $BRANCH"
+            exit 0
+          fi
+
+          # More than one workflow can run on the same pull request, wait until all of them are done
+          PENDING=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs" --jq '[.check_runs[] | select(.status != "completed")] | length')
+          FAILED=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs" --jq '[.check_runs[] | select(.status == "completed" and .conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral")] | length')
+
+          if [ "$FAILED" != "0" ]; then
+            echo "$FAILED check(s) failed on $HEAD_SHA, leaving the pull request open"
+            exit 0
+          fi
+
+          if [ "$PENDING" != "0" ]; then
+            echo "$PENDING check(s) still running on $HEAD_SHA, the next completion will merge"
             exit 0
           fi
 
