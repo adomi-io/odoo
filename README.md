@@ -14,7 +14,7 @@
 
 # Adomi - Odoo
 
-This is an Odoo docker image which is built nightly from the Odoo community GitHub.
+This is an Odoo docker image built from the Odoo community GitHub.
 
 The goal of this repository is to provide a starting point for developers, infrastructure teams, and companies that want to deploy 
 Odoo on cloud platforms, build SaaS or IaaS products around it, or use Odoo as the foundation 
@@ -58,7 +58,7 @@ and scaling your instances effortlessly.
 - 🧱 [**Multi-Stage Dockerfile**](./src/Dockerfile): A transparent, well-documented build process powered by a multi-stage Dockerfile.
 - 🤖 [**Automated CI/CD Pipeline**](./.github/workflows/docker-publish.yml): Fully automated builds via GitHub Actions keep your image consistent and up-to-date.
 - 🧪 [**Robust Unit Testing**](./tests/unit-tests.sh): Open, reliable test coverage ensures your Odoo deployments stay stable.
-- 🌙 [**Nightly Upstream Sync**](https://github.com/odoo/odoo): Built nightly from the latest code in the official Odoo GitHub repository, so you're always running the freshest version.
+- 🔄 [**Upstream Sync**](https://github.com/odoo/odoo): Rebuilt every day the official Odoo GitHub repository changes, after the Odoo unit tests pass, so you're always running a tested current version.
 
 # Getting started
 
@@ -103,19 +103,37 @@ docker run --name odoo \
 
 # Update your image
 
-Pull the latest nightly build for your version of Odoo:
+Pull the latest build for your version of Odoo:
 
 ```bash
 docker pull ghcr.io/adomi-io/odoo:20.0
 ```
 
-## Supported versions
+Every build is also tagged with its date and with the Odoo commit it was built from, so you can pin a
+known good build and roll back to it:
 
+```bash
+docker pull ghcr.io/adomi-io/odoo:20.0-2026-10-31
+docker pull ghcr.io/adomi-io/odoo:20.0-1a2b3c4d5e6f
+```
+
+## How the image is updated
+
+The Odoo source code is a git submodule at `src/odoo`, pinned to a commit on the version branch. Clone this
+repository with `git clone --recurse-submodules`, or run `git submodule update --init` in an existing checkout.
+
+- Dependabot opens a pull request every day when the pin is behind the Odoo branch
+- The pull request builds the image and runs the Odoo unit tests
+- Pull requests that pass are merged automatically, which publishes a new image
+- The nightly build rebuilds every version so operating system updates get picked up
+
+## Supported versions
 
 | Odoo                                               | Pull Command                                 |
 |----------------------------------------------------|----------------------------------------------|
 | [20.0](https://github.com/adomi-io/odoo/tree/20.0) | ```docker pull ghcr.io/adomi-io/odoo:20.0``` |
 | [19.0](https://github.com/adomi-io/odoo/tree/19.0) | ```docker pull ghcr.io/adomi-io/odoo:19.0``` |
+| [18.0](https://github.com/adomi-io/odoo/tree/18.0) | ```docker pull ghcr.io/adomi-io/odoo:18.0``` |
 
 ## Using Secret Files
 

@@ -13,7 +13,6 @@ services:
       ODOO_DB_PASSWORD: ${DB_PASSWORD:-odoo}
     volumes:
       - ./src/odoo.conf:/volumes/config/odoo.conf
-      - ./tests/config:/volumes/config
       - ./addons:/volumes/addons
       - ./hooks:/hooks
       - odoo_data:/volumes/data

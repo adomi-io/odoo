@@ -4,13 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       odoo_version:
-        description: 'Odoo branch/tag to build (e.g., 20.0)'
+        description: 'Odoo version to build (defaults to the branch you run it from)'
         required: false
-        default: '20.0'
-      odoo_repository:
-        description: 'Odoo git repository to clone (e.g., https://github.com/odoo/odoo.git)'
-        required: false
-        default: 'https://github.com/odoo/odoo.git'
+        default: ''
       image_tag:
         description: 'Optional: override the Docker tag (defaults to the selected Odoo version)'
         required: false
@@ -29,6 +25,19 @@ on:
 
   push:
     branches:
+      - "18.0"
+      - "19.0"
+      - "20.0"
+    paths:
+      - '**'
+      - '!README.md'
+      - '!get-started/**'
+      - '!get-started'
+
+  pull_request:
+    branches:
+      - "18.0"
+      - "19.0"
       - "20.0"
     paths:
       - '**'
@@ -44,8 +53,15 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        # A dispatch builds the version you picked, a push or pull request builds the version of its branch,
+        # the nightly run builds every version
+        odoo_version: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.odoo_version || github.ref_name) || github.event_name == 'pull_request' && format('["{0}"]', github.base_ref) || github.event_name == 'push' && format('["{0}"]', github.ref_name) || '["18.0", "19.0", "20.0"]') }}
+
     concurrency:
-      group: docker-${{ inputs.odoo_version || '20.0' }}
+      group: docker-${{ matrix.odoo_version }}-${{ github.event_name == 'pull_request' && github.ref || 'release' }}
       cancel-in-progress: true
 
     permissions:
@@ -53,16 +69,23 @@ jobs:
       packages: write
 
     env:
-      ODOO_VERSION: ${{ inputs.odoo_version || '20.0' }}
-      ODOO_REPOSITORY: ${{ inputs.odoo_repository || 'https://github.com/odoo/odoo.git' }}
+      ODOO_VERSION: ${{ matrix.odoo_version }}
       IMAGE_TAG: ${{ inputs.image_tag || '' }}
       TARGET_PLATFORMS: ${{ inputs.target_platforms || 'linux/amd64,linux/arm64' }}
       SKIP_UNIT_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_unit_tests || false }}
-      TEST_IMAGE_TAG: ghcr.io/${{ github.repository }}:${{ inputs.image_tag != '' && inputs.image_tag || inputs.odoo_version || '20.0' }}
+      TEST_IMAGE_TAG: ghcr.io/${{ github.repository }}:${{ inputs.image_tag != '' && inputs.image_tag || matrix.odoo_version }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # The nightly run builds each Odoo version from the branch of the same name
+          ref: ${{ github.event_name == 'schedule' && matrix.odoo_version || github.ref }}
+          submodules: true
+
+      - name: Read the Odoo commit
+        id: odoo
+        run: echo "sha=$(git -C src/odoo rev-parse --short=12 HEAD 2>/dev/null || echo branch)" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -77,6 +100,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=${{ env.IMAGE_TAG != '' && env.IMAGE_TAG || env.ODOO_VERSION }},enable=true
+            type=raw,value=${{ env.ODOO_VERSION }}-{{date 'YYYY-MM-DD'}},enable=${{ env.IMAGE_TAG == '' }}
+            type=raw,value=${{ env.ODOO_VERSION }}-${{ steps.odoo.outputs.sha }},enable=${{ env.IMAGE_TAG == '' }}
 
       - name: Build image for unit tests
         if: ${{ env.SKIP_UNIT_TESTS != 'true' }}
@@ -84,9 +109,6 @@ jobs:
         with:
           context: ./src
           platforms: linux/amd64
-          build-args: |
-            ODOO_VERSION=${{ env.ODOO_VERSION }}
-            ODOO_REPOSITORY=${{ env.ODOO_REPOSITORY }}
           tags: ${{ env.TEST_IMAGE_TAG }}
           load: true
 
@@ -113,9 +135,6 @@ jobs:
         with:
           context: ./src
           platforms: ${{ env.TARGET_PLATFORMS }}
-          build-args: |
-            ODOO_VERSION=${{ env.ODOO_VERSION }}
-            ODOO_REPOSITORY=${{ env.ODOO_REPOSITORY }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true

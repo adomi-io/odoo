@@ -1,35 +1,42 @@
 # syntax=docker/dockerfile:1.9
-# Download the source code from a branch
+# Odoo source code is a git submodule at src/odoo pinned to a commit on the version branch
 # You can get the related corrisponding enterprise and design-themes versions by running
 # from odoo import release; print(release.repos_heads)
-FROM alpine AS source
+FROM scratch AS source
 
-ARG ODOO_VERSION=20.0
-ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
-ARG SPECIFIC_DATE
-ARG SPECIFIC_HASH
+COPY odoo/ /source/odoo/
 
-RUN apk add --no-cache git ca-certificates && update-ca-certificates
-
-WORKDIR /source/odoo
-
-RUN --mount=type=cache,target=/root/.cache/git \
-    set -eu; \
-    git init .; \
-    git remote add origin "${ODOO_REPOSITORY}"; \
-    if [ -n "${SPECIFIC_HASH:-}" ]; then \
-        git fetch --depth 1 origin "${SPECIFIC_HASH}"; \
-        git checkout FETCH_HEAD; \
-    elif [ -n "${SPECIFIC_DATE:-}" ]; then \
-        git fetch origin "${ODOO_VERSION}"; \
-        REV_HASH="$(git rev-list -n 1 --before="${SPECIFIC_DATE}" "FETCH_HEAD")"; \
-        test -n "${REV_HASH}"; \
-        git checkout "${REV_HASH}"; \
-    else \
-        git fetch --depth 1 origin "${ODOO_VERSION}"; \
-        git checkout FETCH_HEAD; \
-    fi; \
-    rm -rf .git
+# The source can also be fetched at build time instead of using the submodule
+# For example:
+#
+# FROM alpine AS source
+#
+# ARG ODOO_VERSION=20.0
+# ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
+# ARG SPECIFIC_DATE
+# ARG SPECIFIC_HASH
+#
+# RUN apk add --no-cache git ca-certificates && update-ca-certificates
+#
+# WORKDIR /source/odoo
+#
+# RUN --mount=type=cache,target=/root/.cache/git \
+#     set -eu; \
+#     git init .; \
+#     git remote add origin "${ODOO_REPOSITORY}"; \
+#     if [ -n "${SPECIFIC_HASH:-}" ]; then \
+#         git fetch --depth 1 origin "${SPECIFIC_HASH}"; \
+#         git checkout FETCH_HEAD; \
+#     elif [ -n "${SPECIFIC_DATE:-}" ]; then \
+#         git fetch origin "${ODOO_VERSION}"; \
+#         REV_HASH="$(git rev-list -n 1 --before="${SPECIFIC_DATE}" "FETCH_HEAD")"; \
+#         test -n "${REV_HASH}"; \
+#         git checkout "${REV_HASH}"; \
+#     else \
+#         git fetch --depth 1 origin "${ODOO_VERSION}"; \
+#         git checkout FETCH_HEAD; \
+#     fi; \
+#     rm -rf .git
 
 # This build step will go download the latest version
 # of wkhtmltopdf (keep your eyes on https://github.com/odoo/paper-muncher)
@@ -90,9 +97,9 @@ RUN curl -L -O "https://github.com/${GEOLITE_GITHUB_REPOSITORY}/raw/download/Geo
 # This is the final output, and is the container that will run our code
 FROM ubuntu:noble AS setup
 
-# # Use /bin/bash with debugging (-x) and fail on pipeline errors (-o pipefail) for subsequent commands
+# Use /bin/bash and fail on pipeline errors (-o pipefail) for subsequent commands
 # We also enable -e to exit on the first error and -u to catch unset vars
-SHELL ["/bin/bash", "-xeuo", "pipefail", "-c"]
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 # Which version of Python to setup in the venv
 # Keep this pinned to a version available in the base Ubuntu repositories.
@@ -222,14 +229,13 @@ LABEL maintainer="Adomi Software, LLC <github@adomisoftware.com>" \
       source="https://github.com/adomi-io/odoo" \
       description="Adomi-io - Odoo"
 
-# # Use /bin/bash with debugging (-x) and fail on pipeline errors (-o pipefail) for subsequent commands
-SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
+# Use /bin/bash and fail on pipeline errors (-o pipefail) for subsequent commands
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Odoo-specific configuration options
 # If you set these, these values are baked into the container.
 # This means they will be the default if no other environment variable is specified at run-time.
 ENV ODOO_CONFIG="/volumes/config/_generated.conf" \
-    ODOO_ADDONS_PATH="/odoo/addons,/volumes/addons" \
     ODOO_GEOIP_CITY_DB="/usr/share/GeoIP/GeoLite2-City.mmdb" \
     ODOO_GEOIP_COUNTRY_DB="/usr/share/GeoIP/GeoLite2-Country.mmdb" \
     ODOO_ADDONS_PATH="/volumes/addons,/volumes/data/addons/20.0,/volumes/extra_addons,/volumes/enterprise,/odoo/addons,/odoo/odoo/addons" \
@@ -249,7 +255,7 @@ RUN chmod +x /odoo/odoo-bin \
 
 # Odoo's unit tests expect there to be a site-package installed called odoo-bin (test_upgrade_code.py).
 # Create a symlink inside the venv's site-packages without hard-coding its path.
-RUN set -eux; \
+RUN set -eu; \
     SITE_PACKAGES="$(python -c 'import site; print(site.getsitepackages()[0])')"; \
     ln -sf /odoo/odoo-bin "${SITE_PACKAGES}/odoo-bin"
 
