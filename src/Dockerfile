@@ -105,7 +105,7 @@ ARG GID=1000
 WORKDIR /setup
 
 # Set our environment local
-ENV LANG=C.UTF-8
+ENV LANG=en_US.UTF-8
 
 # Set the location of the input and output file for our config.
 # ODOO_RC is checked by Odoo in the config.py script
@@ -121,7 +121,7 @@ ENV npm_config_prefix=/usr
 
 # Install Odoo dependencies and system packages
 # We add tini as PID 1 to correctly handle signals and reap zombies.
-RUN --mount=type=cache,target=/var/cache/apt \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         build-essential \
@@ -146,16 +146,39 @@ RUN --mount=type=cache,target=/var/cache/apt \
         libxext6 \
         libxrender1 \
         gettext \
-        postgresql-client \
         libcairo2-dev libcairo2 \
+        libmagic1 \
+        fonts-dejavu-core \
+        fonts-inconsolata \
+        fonts-font-awesome \
+        fonts-roboto-unhinted \
+        gsfonts \
+        locales \
         git \
         tini; \
+    rm -rf /var/lib/apt/lists/*; \
+    locale-gen en_US.UTF-8
+
+# Install the latest postgresql-client from the PostgreSQL apt repository
+# The client has to be at least as new as the database server for pg_dump to work
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    echo 'deb http://apt.postgresql.org/pub/repos/apt/ noble-pgdg main' > /etc/apt/sources.list.d/pgdg.list; \
+    GNUPGHOME="$(mktemp -d)"; \
+    export GNUPGHOME; \
+    repokey='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8'; \
+    gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "${repokey}"; \
+    gpg --batch --armor --export "${repokey}" > /etc/apt/trusted.gpg.d/pgdg.gpg.asc; \
+    gpgconf --kill all; \
+    rm -rf "$GNUPGHOME"; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends postgresql-client; \
+    rm -f /etc/apt/sources.list.d/pgdg.list; \
     rm -rf /var/lib/apt/lists/*
 
 # Copy the wkhtmltopdf binary that we fetched in the wkhtmltox build step
 COPY --from=wkhtmltox /wkhtmltox/wkhtmltox.deb wkhtmltox.deb
 
-RUN --mount=type=cache,target=/var/cache/apt \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update; \
     apt-get install -y --no-install-recommends ./wkhtmltox.deb; \
     rm -rf /var/lib/apt/lists/* /setup/wkhtmltox.deb
@@ -175,7 +198,7 @@ WORKDIR /venv
 
 # Install and setup Python. This uses the deadsnakes/ppa repository, which allows you to pull and test
 # future releases of Python if you want.
-RUN --mount=type=cache,target=/var/cache/apt \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   export DEBIAN_FRONTEND=noninteractive; \
   apt-get update; \
   apt-get install -y --no-install-recommends gnupg software-properties-common ca-certificates; \
@@ -201,8 +224,15 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-# Install some additional addons required by Odoo
-RUN pip install rlpycairo
+# Install the optional packages Odoo uses when they are present
+RUN pip install \
+      rlpycairo \
+      python-magic \
+      phonenumbers \
+      pdfminer.six \
+      odfpy \
+      python-slugify \
+      watchdog
 
 # Odoo's unit tests check to ensure that addons are located at
 # /usr/lib/python3/dist-packages/addons.
