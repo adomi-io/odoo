@@ -1,26 +1,33 @@
 # syntax=docker/dockerfile:1.9
-# Download the source code from a branch
+# Odoo source code is a git submodule at src/odoo pinned to a commit on the version branch
 # You can get the related corrisponding enterprise and design-themes versions by running
 # from odoo import release; print(release.repos_heads)
-FROM alpine AS source
+FROM scratch AS source
 
-ARG ODOO_VERSION=18.0
-ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
+COPY odoo/ /source/odoo/
 
-# Install required packages: curl, jq, and tar (or unzip if needed)
-RUN apk add --no-cache git ca-certificates && update-ca-certificates
-
-# The source code will be stored in /source/odoo
-WORKDIR /source
-
-# Grab the latest source from GitHub
-# We add a cache mount for git to speed up repeated builds
-RUN --mount=type=cache,target=/root/.cache/git \
-    git clone  \
-    --branch ${ODOO_VERSION}  \
-    --single-branch  \
-    --depth 1  \
-    ${ODOO_REPOSITORY}
+# The source can also be fetched at build time instead of using the submodule
+# For example:
+#
+# FROM alpine AS source
+#
+# ARG ODOO_VERSION=18.0
+# ARG ODOO_REPOSITORY=https://github.com/odoo/odoo.git
+#
+# # Install required packages: curl, jq, and tar (or unzip if needed)
+# RUN apk add --no-cache git ca-certificates && update-ca-certificates
+#
+# # The source code will be stored in /source/odoo
+# WORKDIR /source
+#
+# # Grab the latest source from GitHub
+# # We add a cache mount for git to speed up repeated builds
+# RUN --mount=type=cache,target=/root/.cache/git \
+#     git clone  \
+#     --branch ${ODOO_VERSION}  \
+#     --single-branch  \
+#     --depth 1  \
+#     ${ODOO_REPOSITORY}
 
 # This build step will go download the latest version
 # of wkhtmltopdf (keep your eyes on https://github.com/odoo/paper-muncher)
@@ -81,9 +88,9 @@ RUN curl -L -O "https://github.com/${GEOLITE_GITHUB_REPOSITORY}/raw/download/Geo
 # This is the final output, and is the container that will run our code
 FROM ubuntu:noble AS setup
 
-# # Use /bin/bash with debugging (-x) and fail on pipeline errors (-o pipefail) for subsequent commands
+# Use /bin/bash and fail on pipeline errors (-o pipefail) for subsequent commands
 # We also enable -e to exit on the first error and -u to catch unset vars
-SHELL ["/bin/bash", "-xeuo", "pipefail", "-c"]
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 # Which version of Python to setup in the venv
 ARG PYTHON_VERSION=3.13
@@ -217,8 +224,8 @@ LABEL maintainer="Adomi Software, LLC <github@adomisoftware.com>" \
       source="https://github.com/adomi-io/odoo" \
       description="Adomi-io - Odoo"
 
-# # Use /bin/bash with debugging (-x) and fail on pipeline errors (-o pipefail) for subsequent commands
-SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
+# Use /bin/bash and fail on pipeline errors (-o pipefail) for subsequent commands
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Odoo-specific configuration options
 # If you set these, these values are baked into the container.
@@ -280,7 +287,7 @@ EXPOSE 8069 8071 8072
 WORKDIR /volumes
 
 # Create a non-root user for better isolation; we chown only the writable mounts
-RUN set -eux; \
+RUN set -eu; \
     chown -R "${UID}:${GID}" /volumes || true
 
 # Add a healthcheck that pings Odoo's health endpoint; this helps orchestrators know when the app is ready

@@ -1,0 +1,4 @@
+[submodule "src/odoo"]
+	path = src/odoo
+	url = https://github.com/odoo/odoo.git
+	branch = 18.0

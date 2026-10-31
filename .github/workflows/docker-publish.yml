@@ -2,42 +2,90 @@ name: Docker
 
 on:
   workflow_dispatch:
+    inputs:
+      odoo_version:
+        description: 'Odoo version to build (defaults to the branch you run it from)'
+        required: false
+        default: ''
+      image_tag:
+        description: 'Optional: override the Docker tag (defaults to the selected Odoo version)'
+        required: false
+        default: ''
+      target_platforms:
+        description: 'Target platforms for buildx (e.g., linux/amd64,linux/arm64)'
+        required: false
+        default: 'linux/amd64'
+      skip_unit_tests:
+        description: 'Skip unit tests when building this image'
+        type: boolean
+        default: true
+
   schedule:
     - cron: '38 3 * * *'
+
   push:
     branches:
       - "18.0"
       - "19.0"
+      - "20.0"
     paths:
       - '**'
       - '!README.md'
+      - '!get-started/**'
+      - '!get-started'
+
+  pull_request:
+    branches:
+      - "18.0"
+      - "19.0"
+      - "20.0"
+    paths:
+      - '**'
+      - '!README.md'
+      - '!get-started/**'
+      - '!get-started'
 
 env:
   REGISTRY: ghcr.io
-  REGISTRY_USERNAME: ${{ github.actor }}
-  REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   IMAGE_NAME: ${{ github.repository }}
-  SKIP_UNIT_TESTS: false
-  TARGET_PLATFORMS: amd64,arm64
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    concurrency:
-      group: docker-${{ matrix.branch }}
-      cancel-in-progress: true
+
     strategy:
-      matrix:
-        branch: [ "18.0", "19.0" ]
       fail-fast: false
+      matrix:
+        # A dispatch builds the version you picked, a push or pull request builds the version of its branch,
+        # the nightly run builds every version
+        odoo_version: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.odoo_version || github.ref_name) || github.event_name == 'pull_request' && format('["{0}"]', github.base_ref) || github.event_name == 'push' && format('["{0}"]', github.ref_name) || '["18.0", "19.0", "20.0"]') }}
+
+    concurrency:
+      group: docker-${{ matrix.odoo_version }}-${{ github.event_name == 'pull_request' && github.ref || 'release' }}
+      cancel-in-progress: true
+
     permissions:
       contents: read
       packages: write
+
+    env:
+      ODOO_VERSION: ${{ matrix.odoo_version }}
+      IMAGE_TAG: ${{ inputs.image_tag || '' }}
+      TARGET_PLATFORMS: ${{ inputs.target_platforms || 'linux/amd64,linux/arm64' }}
+      SKIP_UNIT_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_unit_tests || false }}
+      TEST_IMAGE_TAG: ghcr.io/${{ github.repository }}:${{ inputs.image_tag != '' && inputs.image_tag || matrix.odoo_version }}
+
     steps:
-      - name: Checkout repository on branch ${{ matrix.branch }}
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.branch }}
+          # The nightly run builds each Odoo version from the branch of the same name
+          ref: ${{ github.event_name == 'schedule' && matrix.odoo_version || github.ref }}
+          submodules: true
+
+      - name: Read the Odoo commit
+        id: odoo
+        run: echo "sha=$(git -C src/odoo rev-parse --short=12 HEAD 2>/dev/null || echo branch)" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -45,25 +93,31 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image for testing
-        id: build
-        if: env.SKIP_UNIT_TESTS != 'true'
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ env.IMAGE_TAG != '' && env.IMAGE_TAG || env.ODOO_VERSION }},enable=true
+            type=raw,value=${{ env.ODOO_VERSION }}-{{date 'YYYY-MM-DD'}},enable=${{ env.IMAGE_TAG == '' }}
+            type=raw,value=${{ env.ODOO_VERSION }}-${{ steps.odoo.outputs.sha }},enable=${{ env.IMAGE_TAG == '' }}
+
+      - name: Build image for unit tests
+        if: ${{ env.SKIP_UNIT_TESTS != 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: ./src
-          build-args: |
-            ODOO_VERSION=${{ matrix.branch }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-test
-          push: false
+          platforms: linux/amd64
+          tags: ${{ env.TEST_IMAGE_TAG }}
           load: true
-          cache-to: type=gha,mode=max
 
       - name: Run unit tests
+        if: ${{ env.SKIP_UNIT_TESTS != 'true' }}
         working-directory: tests
-        if: env.SKIP_UNIT_TESTS != 'true'
         env:
-          TESTS_IMAGE_TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-test
-          SKIP_BUILD: true
+          TESTS_IMAGE_TAG: ${{ env.TEST_IMAGE_TAG }}
+          TESTS_SKIP_BUILD: true
         run: ./unit-tests.sh
 
       - name: Log into registry
@@ -71,17 +125,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ env.REGISTRY_USERNAME}}
-          password: ${{ env.REGISTRY_PASSWORD }}
-
-      - name: Extract Docker metadata
-        if: github.event_name != 'pull_request'
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ matrix.branch }},enable=true
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push multi-arch Docker image
         if: github.event_name != 'pull_request'
@@ -90,8 +135,6 @@ jobs:
         with:
           context: ./src
           platforms: ${{ env.TARGET_PLATFORMS }}
-          build-args: |
-            ODOO_VERSION=${{ matrix.branch }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true

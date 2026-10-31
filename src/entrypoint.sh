@@ -167,7 +167,7 @@ export ODOO_DB_HOST="${ODOO_DB_HOST:-}"
 export ODOO_DB_REPLICA_HOST="${ODOO_DB_REPLICA_HOST:-}"
 
 # db_port (default '')
-export ODOO_DB_PORT="${ODOO_DB_PORT:-}"
+export ODOO_DB_PORT="${ODOO_DB_PORT:-5432}"
 
 # db_replica_port (default '')
 export ODOO_DB_REPLICA_PORT="${ODOO_DB_REPLICA_PORT:-}"

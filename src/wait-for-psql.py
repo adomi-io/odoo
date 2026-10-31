@@ -14,7 +14,7 @@ class DatabaseConnectionError(Exception):
 if __name__ == '__main__':
     # Load options from the env
     default_config_path = os.getenv('ODOO_RC', '/volumes/config/_generated.conf')
-    default_psql_wait_timeout = os.getenv('PSQL_WAIT_TIMEOUT', 30)
+    default_psql_wait_timeout = int(os.getenv('PSQL_WAIT_TIMEOUT', 30))
 
     # Load options from the command line
     arg_parser = argparse.ArgumentParser()
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     config.read(args.config)
     config_db_host = config.get('options', 'db_host', fallback='localhost')
     config_db_port = config.get('options', 'db_port', fallback=5432)
-    config_db_user = config.get('options', 'db_user', fallback=5432)
+    config_db_user = config.get('options', 'db_user', fallback='odoo')
     config_log_level = config.get('options', 'log_level', fallback='INFO')
 
     # Use the args if they are specified, otherwise, use the values from the config
