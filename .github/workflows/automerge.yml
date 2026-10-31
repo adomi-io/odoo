@@ -1,0 +1,41 @@
+# Merge Dependabot submodule updates once the build and the unit tests have passed
+# Pull requests that change workflow files cannot be merged with the workflow token
+name: Auto-merge dependency updates
+
+on:
+  workflow_run:
+    workflows:
+      - "Docker"
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      startsWith(github.event.workflow_run.head_branch, 'dependabot/submodules/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Merge the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          PR_NUMBER=$(gh pr list --repo "$REPO" --head "$BRANCH" --state open --json number --jq '.[0].number')
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No open pull request for $BRANCH"
+            exit 0
+          fi
+
+          gh pr merge "$PR_NUMBER" \
+            --repo "$REPO" \
+            --squash \
+            --delete-branch

@@ -1,4 +1,2 @@
 .idea
 enterprise
-!docker/addons
-!docker/addons/*
