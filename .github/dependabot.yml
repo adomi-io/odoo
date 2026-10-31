@@ -16,6 +16,9 @@ updates:
     commit-message:
       prefix: "Odoo"
     open-pull-requests-limit: 2
+    # Dependabot applies a 3 day cooldown by default; take updates as soon as they land
+    cooldown:
+      default-days: 0
 
   - package-ecosystem: gitsubmodule
     directory: /
@@ -31,6 +34,9 @@ updates:
     commit-message:
       prefix: "Odoo"
     open-pull-requests-limit: 2
+    # Dependabot applies a 3 day cooldown by default; take updates as soon as they land
+    cooldown:
+      default-days: 0
 
   - package-ecosystem: gitsubmodule
     directory: /
@@ -46,6 +52,9 @@ updates:
     commit-message:
       prefix: "Odoo"
     open-pull-requests-limit: 2
+    # Dependabot applies a 3 day cooldown by default; take updates as soon as they land
+    cooldown:
+      default-days: 0
 
   - package-ecosystem: github-actions
     directory: /
@@ -56,3 +65,6 @@ updates:
       actions:
         patterns:
           - "*"
+    # Dependabot applies a 3 day cooldown by default; take updates as soon as they land
+    cooldown:
+      default-days: 0
