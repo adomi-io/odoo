@@ -1,0 +1,28 @@
+# Check the get-started submodule when it changes
+# The Docker workflow ignores this folder, so Dependabot bumps to it need their own check
+name: Get started
+
+on:
+  pull_request:
+    paths:
+      - get-started
+      - .gitmodules
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch the pinned boilerplate
+        run: git submodule update --init -- get-started
+
+      - name: Check the boilerplate files are there
+        run: |
+          for FILE in Dockerfile docker-compose.yml README.md; do
+            test -f "get-started/$FILE" || { echo "get-started/$FILE is missing"; exit 1; }
+          done
+
+          echo "get-started is at $(git -C get-started rev-parse --short HEAD)"
